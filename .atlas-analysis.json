@@ -1,0 +1,146 @@
+{
+  "projectType": "saas",
+  "projectName": "BeanQuick",
+  "projectDescription": "A marketplace platform connecting local businesses with customers for online ordering and delivery management",
+  "theme": "almond",
+  "primaryColor": "#8B4513",
+  "lightColor": "#D2691E",
+  "darkColor": "#5C3317",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/user-roles",
+              "concepts/business-workflow",
+              "concepts/order-lifecycle"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/business-registration",
+              "features/product-management",
+              "features/shopping-cart",
+              "features/order-management",
+              "features/payments",
+              "features/ratings-reviews"
+            ]
+          },
+          {
+            "group": "User Guides",
+            "pages": [
+              "guides/customer-guide",
+              "guides/business-guide",
+              "guides/admin-guide"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Authentication",
+            "pages": [
+              "api/authentication",
+              "api/registration"
+            ]
+          },
+          {
+            "group": "Customer API",
+            "pages": [
+              "api/customer/cart",
+              "api/customer/orders",
+              "api/customer/reviews"
+            ]
+          },
+          {
+            "group": "Business API",
+            "pages": [
+              "api/business/products",
+              "api/business/orders",
+              "api/business/dashboard"
+            ]
+          },
+          {
+            "group": "Admin API",
+            "pages": [
+              "api/admin/approvals",
+              "api/admin/users",
+              "api/admin/businesses"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Multi-role authentication system (Customer, Business, Admin)",
+    "Business registration with admin approval workflow",
+    "Product catalog with categories and search",
+    "Shopping cart and checkout system",
+    "Mercado Pago payment integration",
+    "Order management with status tracking",
+    "Business dashboard with sales analytics and PDF reports",
+    "Customer reviews and ratings system",
+    "Real-time business availability toggle"
+  ],
+  "publicApiSurface": [
+    "POST /api/register - User registration",
+    "POST /api/login - User authentication",
+    "POST /api/logout - User logout",
+    "GET /api/productos/destacados - Featured products",
+    "GET /api/categorias - Product categories",
+    "POST /api/solicitud-empresa - Business registration request",
+    "POST /api/empresa/activar/{token} - Activate business account",
+    "GET /api/user - Get authenticated user",
+    "PATCH /api/profile - Update user profile",
+    "GET /api/cliente/empresas - List all businesses",
+    "GET /api/cliente/empresa/{id} - View business details",
+    "GET /api/cliente/empresa/{id}/productos - Business products",
+    "POST /api/cliente/carrito/agregar/{productoId} - Add to cart",
+    "GET /api/cliente/carrito - View cart",
+    "PUT /api/cliente/carrito/actualizar/{productoId} - Update cart item",
+    "DELETE /api/cliente/carrito/eliminar/{productoId} - Remove from cart",
+    "POST /api/cliente/pedidos - Create order",
+    "GET /api/cliente/mis-pedidos - Customer orders",
+    "POST /api/cliente/pedidos/{id}/pagar - Process payment",
+    "POST /api/cliente/calificar - Submit review",
+    "GET /api/cliente/mis-calificaciones - Customer reviews",
+    "GET /api/empresa/perfil - Business profile",
+    "POST /api/empresa/update - Update business profile",
+    "GET /api/empresa/productos - Business products list",
+    "POST /api/empresa/productos - Create product",
+    "PUT /api/empresa/productos/{producto} - Update product",
+    "DELETE /api/empresa/productos/{producto} - Delete product",
+    "GET /api/empresa/dashboard - Business analytics dashboard",
+    "GET /api/empresa/pedidos - Business orders received",
+    "PATCH /api/empresa/pedidos/{pedido}/estado - Update order status",
+    "GET /api/empresa/dashboard/pdf - Download sales report",
+    "POST /api/empresa/toggle-estado - Toggle business open/closed status",
+    "GET /api/admin/solicitudes - Pending business applications",
+    "POST /api/admin/aprobar/{id} - Approve business application",
+    "POST /api/admin/rechazar/{id} - Reject business application",
+    "POST /api/admin/categorias - Create category",
+    "DELETE /api/admin/categorias/{id} - Delete category",
+    "GET /api/admin/usuarios/{id} - Get user details",
+    "PUT /api/admin/usuarios/{id} - Update user",
+    "DELETE /api/admin/usuarios/{id} - Delete user",
+    "GET /api/admin/empresas - List all businesses",
+    "PUT /api/admin/empresas/{id} - Update business",
+    "DELETE /api/admin/empresas/{id} - Delete business",
+    "POST /api/webhook/mercadopago - Mercado Pago webhook"
+  ]
+}
