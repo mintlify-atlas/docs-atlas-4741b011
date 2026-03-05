@@ -355,3 +355,70 @@ curl -X POST https://api.beanquick.com/api/admin/rechazar/1 \
 <Note>
   Rejected requests will no longer appear in the pending approvals list.
 </Note>
+## Category Management
+
+Admins can create and delete product categories that businesses use to organize their products.
+
+### Create Category
+
+<CodeGroup>
+```bash POST /api/admin/categorias
+curl -X POST https://api.beanquick.com/api/admin/categorias \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Bebidas"
+  }'
+```
+</CodeGroup>
+
+Creates a new product category for the platform.
+
+**Request Body**
+
+<ParamField body="nombre" type="string" required>
+  Category name (e.g., "Bebidas", "Comida", "Postres")
+</ParamField>
+
+**Response**
+
+<ResponseField name="id" type="integer">
+  Category ID
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Category name
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Creation timestamp
+</ResponseField>
+
+### Delete Category
+
+<CodeGroup>
+```bash DELETE /api/admin/categorias/{id}
+curl -X DELETE https://api.beanquick.com/api/admin/categorias/5 \
+  -H "Authorization: Bearer {token}"
+```
+</CodeGroup>
+
+Permanently deletes a category. Products using this category will need to be reassigned to another category.
+
+**Path Parameters**
+
+<ParamField path="id" type="integer" required>
+  Category ID to delete
+</ParamField>
+
+**Response**
+
+```json
+{
+  "message": "Categoría eliminada correctamente"
+}
+```
+
+<Warning>
+  Deleting a category may affect products that use it. Ensure products are reassigned to valid categories before deletion.
+</Warning>

@@ -587,3 +587,143 @@ Returned when an unexpected error occurs during activation.
   "linea": 78
 }
 ```
+
+## Public Catalog Endpoints
+
+These endpoints are accessible without authentication and are used to browse the public catalog.
+
+### Get Product Categories
+
+<CodeGroup>
+```bash GET /api/categorias
+curl https://api.beanquick.com/api/categorias
+```
+</CodeGroup>
+
+Returns all product categories available on the platform.
+
+**Response**
+
+Returns an array of category objects:
+
+<ResponseField name="id" type="integer">
+  Category ID
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Category name (e.g., "Bebidas", "Comida", "Postres")
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Creation timestamp
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  Last update timestamp
+</ResponseField>
+
+**Example Response**
+
+```json
+[
+  {
+    "id": 1,
+    "nombre": "Bebidas",
+    "created_at": "2026-01-01T00:00:00.000000Z",
+    "updated_at": "2026-01-01T00:00:00.000000Z"
+  },
+  {
+    "id": 2,
+    "nombre": "Comida",
+    "created_at": "2026-01-01T00:00:00.000000Z",
+    "updated_at": "2026-01-01T00:00:00.000000Z"
+  }
+]
+```
+
+<Info>
+  This endpoint is public and does not require authentication.
+</Info>
+
+### Get Featured Products
+
+<CodeGroup>
+```bash GET /api/productos/destacados
+curl https://api.beanquick.com/api/productos/destacados
+```
+</CodeGroup>
+
+Returns the top 4 products with the highest average ratings across the platform.
+
+**Response**
+
+Returns an array of product objects with ratings:
+
+<ResponseField name="id" type="integer">
+  Product ID
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Product name
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Product description
+</ResponseField>
+
+<ResponseField name="precio" type="number">
+  Product price
+</ResponseField>
+
+<ResponseField name="stock" type="integer">
+  Available stock quantity
+</ResponseField>
+
+<ResponseField name="imagen_url" type="string">
+  Full URL to product image
+</ResponseField>
+
+<ResponseField name="promedio_calificacion" type="number">
+  Average rating (1-5 stars)
+</ResponseField>
+
+<ResponseField name="total_calificaciones" type="integer">
+  Total number of ratings received
+</ResponseField>
+
+<ResponseField name="empresa" type="object">
+  Business information
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Business ID
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Business name
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+**Example Response**
+
+```json
+[
+  {
+    "id": 15,
+    "nombre": "Cappuccino Premium",
+    "descripcion": "Rich espresso with steamed milk",
+    "precio": 4.50,
+    "stock": 100,
+    "imagen_url": "https://api.beanquick.com/storage/productos/cappuccino.jpg",
+    "promedio_calificacion": 4.8,
+    "total_calificaciones": 45,
+    "empresa": {
+      "id": 3,
+      "nombre": "Coffee House"
+    }
+  }
+]
+```
+
+<Info>
+  This endpoint returns a maximum of 4 products sorted by rating. Products must have at least one rating to appear in featured products.
+</Info>
