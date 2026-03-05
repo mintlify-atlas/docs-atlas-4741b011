@@ -1,0 +1,307 @@
+---
+title: 'Review Endpoints'
+description: 'Create, view, update and delete product reviews'
+---
+
+## Create Review
+
+<CodeGroup>
+```bash POST /api/cliente/calificar
+curl -X POST https://your-domain.com/api/cliente/calificar \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "producto_id": 8,
+    "pedido_id": 15,
+    "estrellas": 5,
+    "comentario": "Excelente producto, muy recomendado"
+  }'
+```
+</CodeGroup>
+
+Creates a new review for a product. Customers can only review products from delivered orders.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Body Parameters
+
+<ParamField body="producto_id" type="integer" required>
+  ID of the product to review
+</ParamField>
+
+<ParamField body="pedido_id" type="integer" required>
+  ID of the order containing the product
+</ParamField>
+
+<ParamField body="estrellas" type="integer" required>
+  Rating from 1 to 5 stars
+</ParamField>
+
+<ParamField body="comentario" type="string" optional>
+  Review comment (max 255 characters)
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message: "Calificación guardada correctamente"
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="message" type="string">
+  Error message when:
+  - Already reviewed this product (403)
+  - Product or order not found (422)
+</ResponseField>
+
+<Warning>
+  Customers can only review products from orders that belong to them.
+</Warning>
+
+---
+
+## Get My Reviews
+
+<CodeGroup>
+```bash GET /api/cliente/mis-calificaciones
+curl -X GET https://your-domain.com/api/cliente/mis-calificaciones \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+</CodeGroup>
+
+Retrieves all reviews created by the authenticated customer, ordered by most recent first.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Response
+
+<ResponseField name="calificaciones" type="array">
+  Array of review objects
+  
+  <Expandable title="Review Object">
+    <ResponseField name="id" type="integer">
+      Review ID
+    </ResponseField>
+    
+    <ResponseField name="user_id" type="integer">
+      Customer user ID
+    </ResponseField>
+    
+    <ResponseField name="producto_id" type="integer">
+      Product ID
+    </ResponseField>
+    
+    <ResponseField name="pedido_id" type="integer">
+      Order ID
+    </ResponseField>
+    
+    <ResponseField name="estrellas" type="integer">
+      Star rating (1-5)
+    </ResponseField>
+    
+    <ResponseField name="comentario" type="string">
+      Review comment
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="string">
+      Review creation timestamp
+    </ResponseField>
+    
+    <ResponseField name="producto" type="object">
+      Product details
+      
+      <Expandable title="Product Object">
+        <ResponseField name="id" type="integer">
+          Product ID
+        </ResponseField>
+        
+        <ResponseField name="nombre" type="string">
+          Product name
+        </ResponseField>
+        
+        <ResponseField name="empresa" type="object">
+          Business details
+          
+          <Expandable title="Business Object">
+            <ResponseField name="id" type="integer">
+              Business ID
+            </ResponseField>
+            
+            <ResponseField name="nombre" type="string">
+              Business name
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Update Review
+
+<CodeGroup>
+```bash PATCH /api/cliente/calificaciones/{id}
+curl -X PATCH https://your-domain.com/api/cliente/calificaciones/7 \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "estrellas": 4,
+    "comentario": "Buen producto, actualizo mi reseña"
+  }'
+```
+</CodeGroup>
+
+Updates an existing review. Only the review owner can update it.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the review to update
+</ParamField>
+
+### Body Parameters
+
+<ParamField body="estrellas" type="integer" required>
+  Updated rating from 1 to 5 stars
+</ParamField>
+
+<ParamField body="comentario" type="string" optional>
+  Updated comment text
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message: "Reseña actualizada correctamente"
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="message" type="string">
+  Error message when:
+  - Review not found or doesn't belong to user (404)
+  - Invalid star rating (422)
+</ResponseField>
+
+---
+
+## Delete Review
+
+<CodeGroup>
+```bash DELETE /api/cliente/calificaciones/{id}
+curl -X DELETE https://your-domain.com/api/cliente/calificaciones/7 \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+</CodeGroup>
+
+Deletes a review. Only the review owner can delete it.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the review to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message: "Reseña eliminada correctamente"
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="message" type="string">
+  Error message when review not found or doesn't belong to user (404)
+</ResponseField>
+
+---
+
+## Get Product Reviews (Public)
+
+<CodeGroup>
+```bash GET /api/productos/{id}/calificaciones
+curl -X GET https://your-domain.com/api/productos/8/calificaciones \
+  -H "Accept: application/json"
+```
+</CodeGroup>
+
+Retrieves all reviews for a specific product. This endpoint is public and does not require authentication.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the product
+</ParamField>
+
+### Response
+
+<ResponseField name="calificaciones" type="array">
+  Array of review objects ordered by most recent first
+  
+  <Expandable title="Review Object">
+    <ResponseField name="id" type="integer">
+      Review ID
+    </ResponseField>
+    
+    <ResponseField name="producto_id" type="integer">
+      Product ID
+    </ResponseField>
+    
+    <ResponseField name="estrellas" type="integer">
+      Star rating (1-5)
+    </ResponseField>
+    
+    <ResponseField name="comentario" type="string">
+      Review comment
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="string">
+      Review creation timestamp
+    </ResponseField>
+    
+    <ResponseField name="usuario" type="object">
+      Limited user information
+      
+      <Expandable title="User Object">
+        <ResponseField name="id" type="integer">
+          User ID
+        </ResponseField>
+        
+        <ResponseField name="name" type="string">
+          User name
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Note>
+  This endpoint does not expose sensitive user information, only the user's ID and name.
+</Note>

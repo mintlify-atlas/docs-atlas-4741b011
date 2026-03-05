@@ -1,0 +1,285 @@
+---
+title: 'Business Management'
+description: 'Manage registered businesses including listing, updating, and deleting'
+---
+
+## List All Businesses
+
+<RequestExample>
+```bash Request
+curl -X GET https://api.beanquick.com/api/admin/empresas \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+[
+  {
+    "id": 1,
+    "user_id": 2,
+    "nombre": "Coffee Shop",
+    "nit": "123456789",
+    "direccion": "123 Main St",
+    "telefono": "555-0100",
+    "descripcion": "Best coffee in town",
+    "logo": "logos/coffee-shop.jpg",
+    "foto_local": "stores/coffee-interior.jpg",
+    "is_open": true,
+    "logo_url": "http://api.beanquick.com/storage/logos/coffee-shop.jpg",
+    "foto_local_url": "http://api.beanquick.com/storage/stores/coffee-interior.jpg",
+    "created_at": "2026-01-10T08:00:00.000000Z",
+    "updated_at": "2026-01-10T08:00:00.000000Z",
+    "usuario": {
+      "id": 2,
+      "name": "Coffee Shop Owner",
+      "email": "owner@coffeeshop.com",
+      "rol": "empresa",
+      "created_at": "2026-01-10T07:30:00.000000Z",
+      "updated_at": "2026-01-10T07:30:00.000000Z"
+    }
+  },
+  {
+    "id": 2,
+    "user_id": 3,
+    "nombre": "Artisan Bakery",
+    "nit": "987654321",
+    "direccion": "456 Oak Ave",
+    "telefono": "555-0200",
+    "descripcion": "Fresh baked goods daily",
+    "logo": "logos/bakery-logo.jpg",
+    "foto_local": "stores/bakery-front.jpg",
+    "is_open": false,
+    "logo_url": "http://api.beanquick.com/storage/logos/bakery-logo.jpg",
+    "foto_local_url": "http://api.beanquick.com/storage/stores/bakery-front.jpg",
+    "created_at": "2026-02-15T09:00:00.000000Z",
+    "updated_at": "2026-03-05T10:30:00.000000Z",
+    "usuario": {
+      "id": 3,
+      "name": "Bakery Manager",
+      "email": "manager@bakery.com",
+      "rol": "empresa",
+      "created_at": "2026-02-15T08:45:00.000000Z",
+      "updated_at": "2026-02-15T08:45:00.000000Z"
+    }
+  }
+]
+```
+</ResponseExample>
+
+<ResponseField name="root" type="array">
+  Array of business objects with associated user information
+  <Expandable title="Business object properties">
+    <ResponseField name="id" type="integer">
+      Business ID
+    </ResponseField>
+    <ResponseField name="user_id" type="integer">
+      Associated user account ID
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Business name
+    </ResponseField>
+    <ResponseField name="nit" type="string">
+      Tax identification number (unique)
+    </ResponseField>
+    <ResponseField name="direccion" type="string">
+      Business address
+    </ResponseField>
+    <ResponseField name="telefono" type="string">
+      Contact phone number
+    </ResponseField>
+    <ResponseField name="descripcion" type="string">
+      Business description
+    </ResponseField>
+    <ResponseField name="logo" type="string">
+      Logo file path in storage
+    </ResponseField>
+    <ResponseField name="foto_local" type="string">
+      Store photo file path in storage
+    </ResponseField>
+    <ResponseField name="is_open" type="boolean">
+      Whether the business is currently open for orders
+    </ResponseField>
+    <ResponseField name="logo_url" type="string">
+      Full public URL to logo image
+    </ResponseField>
+    <ResponseField name="foto_local_url" type="string">
+      Full public URL to store photo
+    </ResponseField>
+    <ResponseField name="created_at" type="string">
+      Business creation timestamp
+    </ResponseField>
+    <ResponseField name="updated_at" type="string">
+      Last update timestamp
+    </ResponseField>
+    <ResponseField name="usuario" type="object">
+      Associated user account details
+      <Expandable title="Usuario properties">
+        <ResponseField name="id" type="integer">
+          User ID
+        </ResponseField>
+        <ResponseField name="name" type="string">
+          Owner/manager name
+        </ResponseField>
+        <ResponseField name="email" type="string">
+          Account email
+        </ResponseField>
+        <ResponseField name="rol" type="string">
+          User role (always `empresa` for businesses)
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Note>
+  The response includes full image URLs (`logo_url` and `foto_local_url`) automatically appended by the Empresa model for easier frontend integration.
+</Note>
+
+---
+
+## Update Business
+
+<RequestExample>
+```bash Request
+curl -X PUT https://api.beanquick.com/api/admin/empresas/1 \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Premium Coffee Shop",
+    "nit": "123456789",
+    "telefono": "555-0150",
+    "direccion": "123 Main Street, Suite 200"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "message": "Empresa actualizada con éxito",
+  "empresa": {
+    "id": 1,
+    "user_id": 2,
+    "nombre": "Premium Coffee Shop",
+    "nit": "123456789",
+    "direccion": "123 Main Street, Suite 200",
+    "telefono": "555-0150",
+    "descripcion": "Best coffee in town",
+    "logo": "logos/coffee-shop.jpg",
+    "foto_local": "stores/coffee-interior.jpg",
+    "is_open": true,
+    "logo_url": "http://api.beanquick.com/storage/logos/coffee-shop.jpg",
+    "foto_local_url": "http://api.beanquick.com/storage/stores/coffee-interior.jpg",
+    "created_at": "2026-01-10T08:00:00.000000Z",
+    "updated_at": "2026-03-05T12:00:00.000000Z",
+    "usuario": {
+      "id": 2,
+      "name": "Coffee Shop Owner",
+      "email": "owner@coffeeshop.com",
+      "rol": "empresa",
+      "created_at": "2026-01-10T07:30:00.000000Z",
+      "updated_at": "2026-01-10T07:30:00.000000Z"
+    }
+  }
+}
+```
+</ResponseExample>
+
+<ParamField path="id" type="integer" required>
+  The ID of the business to update
+</ParamField>
+
+<ParamField body="nombre" type="string" required>
+  Business name (max 255 characters)
+</ParamField>
+
+<ParamField body="nit" type="string" required>
+  Tax identification number (must be unique)
+</ParamField>
+
+<ParamField body="telefono" type="string" required>
+  Contact phone number
+</ParamField>
+
+<ParamField body="direccion" type="string" required>
+  Business address
+</ParamField>
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="empresa" type="object">
+  Updated business object with associated user information
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Business ID
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Updated business name
+    </ResponseField>
+    <ResponseField name="nit" type="string">
+      Updated tax ID
+    </ResponseField>
+    <ResponseField name="telefono" type="string">
+      Updated phone number
+    </ResponseField>
+    <ResponseField name="direccion" type="string">
+      Updated address
+    </ResponseField>
+    <ResponseField name="usuario" type="object">
+      Associated user account (loaded to preserve email in frontend)
+    </ResponseField>
+    <ResponseField name="updated_at" type="string">
+      Timestamp of the update
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Note>
+  The NIT must be unique across all businesses, except for the current business being updated. The response includes the associated user account information to help frontends maintain complete state.
+</Note>
+
+---
+
+## Delete Business
+
+<RequestExample>
+```bash Request
+curl -X DELETE https://api.beanquick.com/api/admin/empresas/1 \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "message": "Empresa eliminada correctamente."
+}
+```
+
+```json Error Response
+{
+  "message": "Error al eliminar empresa."
+}
+```
+</ResponseExample>
+
+<ParamField path="id" type="integer" required>
+  The ID of the business to delete
+</ParamField>
+
+<ResponseField name="message" type="string">
+  Success or error message
+</ResponseField>
+
+<Warning>
+  Deleting a business is a permanent operation. If your database has cascade delete configured, all associated products will also be deleted automatically.
+</Warning>
+
+<Note>
+  Ensure you have proper backups before deleting businesses, as this operation cannot be undone.
+</Note>

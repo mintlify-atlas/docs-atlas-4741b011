@@ -1,0 +1,257 @@
+---
+title: 'Order Endpoints'
+description: 'Create and manage customer orders'
+---
+
+## Create Order
+
+<CodeGroup>
+```bash POST /api/cliente/pedidos
+curl -X POST https://your-domain.com/api/cliente/pedidos \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "empresa_id": 3,
+    "hora_recogida": "14:30"
+  }'
+```
+</CodeGroup>
+
+Creates a new order from the cart items for a specific business. The order is created in pending payment status.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Body Parameters
+
+<ParamField body="empresa_id" type="integer" required>
+  ID of the business to create the order for
+</ParamField>
+
+<ParamField body="hora_recogida" type="string" required>
+  Pickup time in HH:mm format (e.g., "14:30")
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message: "Pedido generado pendiente de pago."
+</ResponseField>
+
+<ResponseField name="pedido" type="object">
+  Created order object
+  
+  <Expandable title="Order Object">
+    <ResponseField name="id" type="integer">
+      Order ID
+    </ResponseField>
+    
+    <ResponseField name="empresa_id" type="integer">
+      Business ID
+    </ResponseField>
+    
+    <ResponseField name="user_id" type="integer">
+      Customer user ID
+    </ResponseField>
+    
+    <ResponseField name="estado" type="string">
+      Order status: "Pendiente", "Preparando", "Listo", "Entregado", "Cancelado"
+    </ResponseField>
+    
+    <ResponseField name="estado_pago" type="string">
+      Payment status: "pendiente", "aprobado", "rechazado"
+    </ResponseField>
+    
+    <ResponseField name="hora_recogida" type="string">
+      Pickup time
+    </ResponseField>
+    
+    <ResponseField name="total" type="float">
+      Order total amount
+    </ResponseField>
+    
+    <ResponseField name="productos" type="array">
+      Array of products in the order
+      
+      <Expandable title="Product Details">
+        <ResponseField name="pivot" type="object">
+          <Expandable title="Order Product Data">
+            <ResponseField name="cantidad" type="integer">
+              Quantity ordered
+            </ResponseField>
+            
+            <ResponseField name="precio_unitario" type="float">
+              Unit price at time of order
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="message" type="string">
+  Error message when:
+  - Cart is empty (400)
+  - No products from specified business in cart (422)
+  - Insufficient stock for a product (422)
+  - Already has a pending unpaid order (200 with existing order)
+</ResponseField>
+
+---
+
+## Get My Orders
+
+<CodeGroup>
+```bash GET /api/cliente/mis-pedidos
+curl -X GET https://your-domain.com/api/cliente/mis-pedidos \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+</CodeGroup>
+
+Retrieves all orders for the authenticated customer, ordered by most recent first.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Response
+
+<ResponseField name="pedidos" type="array">
+  Array of order objects
+  
+  <Expandable title="Order Object">
+    <ResponseField name="id" type="integer">
+      Order ID
+    </ResponseField>
+    
+    <ResponseField name="empresa_id" type="integer">
+      Business ID
+    </ResponseField>
+    
+    <ResponseField name="user_id" type="integer">
+      Customer user ID
+    </ResponseField>
+    
+    <ResponseField name="estado" type="string">
+      Order status
+    </ResponseField>
+    
+    <ResponseField name="estado_pago" type="string">
+      Payment status
+    </ResponseField>
+    
+    <ResponseField name="hora_recogida" type="string">
+      Pickup time
+    </ResponseField>
+    
+    <ResponseField name="total" type="float">
+      Order total
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="string">
+      Order creation date in dd/mm/yyyy HH:mm format
+    </ResponseField>
+    
+    <ResponseField name="empresa" type="object">
+      Business details
+    </ResponseField>
+    
+    <ResponseField name="productos" type="array">
+      Products in the order with pivot data
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Cancel Order
+
+<CodeGroup>
+```bash POST /api/cliente/pedidos/{id}/cancelar
+curl -X POST https://your-domain.com/api/cliente/pedidos/12/cancelar \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+</CodeGroup>
+
+Cancels a pending order. If the order was already paid, stock is returned to inventory.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the order to cancel
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message: "Pedido cancelado y stock devuelto"
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="message" type="string">
+  Error message when:
+  - Order not found or doesn't belong to user (404)
+  - Order is not in "Pendiente" status (400)
+</ResponseField>
+
+---
+
+## Pay for Order
+
+<CodeGroup>
+```bash POST /api/cliente/pedidos/{id}/pagar
+curl -X POST https://your-domain.com/api/cliente/pedidos/12/pagar \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+</CodeGroup>
+
+Initiates payment process for an order through Mercado Pago.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the order to pay for
+</ParamField>
+
+### Response
+
+<ResponseField name="init_point" type="string">
+  Mercado Pago checkout URL to redirect the user
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="message" type="string">
+  Error message when:
+  - Not authorized to pay this order (403)
+  - Order already paid (400)
+</ResponseField>
+
+<Note>
+  After payment is processed, Mercado Pago will send a webhook notification to `/api/webhook/mercadopago` to update the order status.
+</Note>

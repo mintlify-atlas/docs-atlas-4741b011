@@ -1,80 +1,441 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get BeanQuick running locally in under 10 minutes
 ---
 
-## Get started in three steps
+## Quick Start Guide
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+This guide will get you up and running with BeanQuick in just a few minutes. We'll use the automated setup script to handle all configuration.
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  **Prerequisites**: Make sure you have PHP 8.2+, Composer, Node.js 16+, and MySQL installed on your system.
 </Note>
+
+## Setup in 3 Steps
+
+<Steps>
+  <Step title="Clone the Repository">
+    Clone BeanQuick to your local machine:
+    
+    ```bash
+    git clone <repository-url>
+    cd BeanQuick
+    ```
+  </Step>
+
+  <Step title="Configure Database">
+    Create a MySQL database and update your environment file:
+    
+    ```bash
+    # Create database (MySQL)
+    mysql -u root -p -e "CREATE DATABASE back_end"
+    
+    # Copy environment file
+    cd back-end
+    cp .env.example .env
+    ```
+    
+    Edit `back-end/.env` and update database credentials:
+    
+    ```bash .env
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=back_end
+    DB_USERNAME=root
+    DB_PASSWORD=your_password
+    ```
+  </Step>
+
+  <Step title="Run Setup Script">
+    BeanQuick includes an automated setup command that handles everything:
+    
+    ```bash
+    composer setup
+    ```
+    
+    This single command will:
+    - Install all PHP dependencies
+    - Copy `.env.example` to `.env` (if not exists)
+    - Generate application key
+    - Run database migrations
+    - Install Node.js dependencies
+    - Build frontend assets
+  </Step>
+</Steps>
+
+<Check>
+  **Setup Complete!** BeanQuick is now installed and ready to run.
+</Check>
+
+## Launch the Application
+
+BeanQuick provides a convenient command to start all services simultaneously:
+
+```bash
+composer dev
+```
+
+This starts three concurrent processes:
+- **Laravel Server** - Backend API on `http://127.0.0.1:8000`
+- **Queue Worker** - Background job processing
+- **Vite Dev Server** - Frontend with HMR on `http://localhost:5173`
+
+<img
+  className="block"
+  src="/images/quickstart-terminal.svg"
+  alt="BeanQuick development servers running"
+/>
+
+<Tip>
+  The `composer dev` command uses **concurrently** to run all services in one terminal window with color-coded output for easy monitoring.
+</Tip>
+
+## Access the Application
+
+Once the development servers are running:
+
+<CardGroup cols={2}>
+  <Card title="Frontend Application" icon="browser" href="http://localhost:5173">
+    **http://localhost:5173**
+    
+    Main user interface for customers and businesses
+  </Card>
+  
+  <Card title="Backend API" icon="server" href="http://127.0.0.1:8000/api">
+    **http://127.0.0.1:8000/api**
+    
+    RESTful API endpoints for all platform operations
+  </Card>
+</CardGroup>
+
+## Create Your First User
+
+### Register as a Customer
+
+<Steps>
+  <Step title="Navigate to Registration">
+    Open your browser to `http://localhost:5173/register`
+  </Step>
+
+  <Step title="Fill Registration Form">
+    Enter your details:
+    - Name
+    - Email
+    - Password
+    - Confirm Password
+  </Step>
+
+  <Step title="Login">
+    After registration, login at `http://localhost:5173/login`
+  </Step>
+</Steps>
+
+### Register a Coffee Business
+
+<Steps>
+  <Step title="Submit Business Application">
+    Navigate to `http://localhost:5173/solicitud-empresa` and fill out:
+    - Business name
+    - NIT (Tax ID)
+    - Contact information
+    - Business description
+  </Step>
+
+  <Step title="Admin Approval Required">
+    Business registrations require admin approval. You'll need an admin account first.
+    
+    <Accordion title="Create Admin Account via Database">
+      ```sql
+      -- Create admin user directly in database
+      INSERT INTO users (name, email, password, rol, created_at, updated_at)
+      VALUES (
+        'Admin User',
+        'admin@beanquick.com',
+        '$2y$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMESaQYb3WewHC6Jv/f2z0QKym', -- password: password
+        'admin',
+        NOW(),
+        NOW()
+      );
+      ```
+    </Accordion>
+  </Step>
+
+  <Step title="Approve Business">
+    Login as admin and navigate to:
+    
+    `http://localhost:5173/admin/solicitudes`
+    
+    Review and approve the business application.
+  </Step>
+
+  <Step title="Activate Business Account">
+    Check the activation link in the application logs or database:
+    
+    ```sql
+    SELECT token FROM solicitud_empresas WHERE estado = 'aprobado';
+    ```
+    
+    Navigate to: `http://localhost:5173/empresa/activar/{token}`
+    
+    Complete the activation process to set up your business account.
+  </Step>
+</Steps>
+
+## Test Key Features
+
+### As a Customer
+
+<CodeGroup>
+```bash Browse Shops
+# Navigate to dashboard
+open http://localhost:5173/cliente/dashboard
+
+# View available coffee shops
+# Click on a shop to see their products
+```
+
+```bash Add to Cart
+# Add products from any shop
+# Cart icon appears in the header
+# Click cart to review items
+```
+
+```bash Place Order
+# Review cart contents
+# Enter delivery address
+# Select pickup time
+# Confirm order
+```
+</CodeGroup>
+
+### As a Business
+
+<CodeGroup>
+```bash Add Products
+# Navigate to business panel
+open http://localhost:5173/empresa/panel
+
+# Go to Products > Add New
+# Upload product image
+# Set price and description
+# Select category
+```
+
+```bash Manage Orders
+# View incoming orders
+open http://localhost:5173/empresa/pedidos
+
+# Update order status:
+# - Pendiente (Pending)
+# - En Preparación (Preparing)
+# - Listo (Ready)
+# - Completado (Completed)
+```
+
+```bash Toggle Store Status
+# Open/close your store
+# Affects visibility to customers
+# Updates in real-time
+```
+</CodeGroup>
+
+## API Testing
+
+Test the API directly using curl or tools like Postman:
+
+<CodeGroup>
+```bash Login
+curl -X POST http://127.0.0.1:8000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "customer@example.com",
+    "password": "password"
+  }'
+```
+
+```bash Get Products
+# Get featured products (no auth required)
+curl http://127.0.0.1:8000/api/productos/destacados
+```
+
+```bash Get User Profile
+# Requires authentication token
+curl http://127.0.0.1:8000/api/user \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+</CodeGroup>
+
+## Development Commands
+
+Useful commands for development:
+
+<AccordionGroup>
+  <Accordion title="Backend Commands" icon="php">
+    ```bash
+    # Run migrations
+    php artisan migrate
+    
+    # Rollback migrations
+    php artisan migrate:rollback
+    
+    # Clear cache
+    php artisan cache:clear
+    php artisan config:clear
+    
+    # Run tests
+    composer test
+    
+    # Code formatting
+    ./vendor/bin/pint
+    
+    # Generate IDE helper files
+    php artisan ide-helper:generate
+    ```
+  </Accordion>
+
+  <Accordion title="Frontend Commands" icon="react">
+    ```bash
+    cd front-end
+    
+    # Start dev server
+    npm run dev
+    
+    # Build for production
+    npm run build
+    
+    # Preview production build
+    npm run preview
+    
+    # Run linter
+    npm run lint
+    ```
+  </Accordion>
+
+  <Accordion title="Database Commands" icon="database">
+    ```bash
+    # Access MySQL console
+    mysql -u root -p back_end
+    
+    # Run seeders
+    php artisan db:seed
+    
+    # Fresh migration with seeding
+    php artisan migrate:fresh --seed
+    
+    # Check database status
+    php artisan migrate:status
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Port Already in Use" icon="triangle-exclamation">
+    If port 8000 or 5173 is already in use:
+    
+    ```bash
+    # Kill process on port 8000 (Linux/Mac)
+    lsof -ti:8000 | xargs kill -9
+    
+    # Kill process on port 5173
+    lsof -ti:5173 | xargs kill -9
+    
+    # Or specify different ports
+    php artisan serve --port=8001
+    npm run dev -- --port 5174
+    ```
+  </Accordion>
+
+  <Accordion title="Database Connection Failed" icon="database">
+    Verify your database credentials:
+    
+    ```bash
+    # Test MySQL connection
+    mysql -u root -p
+    
+    # Check if database exists
+    SHOW DATABASES;
+    
+    # Create database if missing
+    CREATE DATABASE back_end;
+    ```
+    
+    Update `back-end/.env` with correct credentials.
+  </Accordion>
+
+  <Accordion title="Storage Permission Issues" icon="folder">
+    Laravel needs write permissions for storage:
+    
+    ```bash
+    cd back-end
+    chmod -R 775 storage bootstrap/cache
+    
+    # Create storage link for public files
+    php artisan storage:link
+    ```
+  </Accordion>
+
+  <Accordion title="Composer Dependencies Failed" icon="box">
+    If `composer install` fails:
+    
+    ```bash
+    # Update Composer
+    composer self-update
+    
+    # Clear Composer cache
+    composer clear-cache
+    
+    # Install with verbose output
+    composer install -vvv
+    ```
+  </Accordion>
+
+  <Accordion title="Frontend Build Errors" icon="react">
+    If npm has issues:
+    
+    ```bash
+    cd front-end
+    
+    # Clear npm cache
+    npm cache clean --force
+    
+    # Remove node_modules and reinstall
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Now that BeanQuick is running, explore these topics:
+
+<CardGroup cols={2}>
+  <Card title="Detailed Installation" icon="book" href="/installation" color="#8B4513">
+    Learn about production deployment and advanced configuration
+  </Card>
+  
+  <Card title="Configuration" icon="gear" href="/installation" color="#D2691E">
+    Configure payment gateways, email, and environment variables
+  </Card>
+  
+  <Card title="API Documentation" icon="code" href="/api/authentication" color="#5C3317">
+    Explore all API endpoints and authentication methods
+  </Card>
+  
+  <Card title="User Roles" icon="laptop-code" href="/concepts/user-roles" color="#8B4513">
+    Learn about the architecture and different user roles
+  </Card>
+</CardGroup>
+
+<Warning>
+  **Development Environment Only**: The quickstart configuration is optimized for local development. For production deployment, follow the [Installation Guide](/installation) for security best practices.
+</Warning>
+
+---
+
+<Tip>
+  **Pro Tip**: Use the `composer dev` command in a dedicated terminal window and keep it running during development. It provides live reload for both frontend and backend changes.
+</Tip>

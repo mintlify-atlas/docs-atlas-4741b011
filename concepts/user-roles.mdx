@@ -1,0 +1,335 @@
+---
+title: 'User Roles'
+description: 'Understanding the three roles in BeanQuick: Customer, Business, and Admin'
+icon: 'users'
+---
+
+BeanQuick implements a role-based access control system with three distinct user types, each with specific permissions and capabilities.
+
+## Role Overview
+
+<CardGroup cols={3}>
+  <Card title="Customer" icon="user" color="#10b981">
+    Browse products, place orders, and manage purchases
+  </Card>
+  <Card title="Business" icon="store" color="#f59e0b">
+    Manage inventory, fulfill orders, and track sales
+  </Card>
+  <Card title="Admin" icon="shield-halved" color="#ef4444">
+    Approve businesses, manage users, and oversee platform
+  </Card>
+</CardGroup>
+
+## Role Assignment
+
+The `rol` field in the User model determines user permissions:
+
+```php User.php:18
+protected $fillable = [
+    'name',
+    'email',
+    'password',
+    'rol', // 'admin', 'empresa', 'cliente'
+];
+```
+
+<Note>
+  The role is set during registration and determines which API routes and features the user can access.
+</Note>
+
+---
+
+## Customer Role (`cliente`)
+
+Customers are the end-users who browse and purchase products from businesses on the platform.
+
+### Permissions
+
+<AccordionGroup>
+  <Accordion title="Shopping & Orders" icon="cart-shopping">
+    - Browse all active businesses and their products
+    - Add products to cart from a single business per order
+    - Place orders with pickup time selection
+    - View order history and track order status
+    - Cancel pending orders before payment
+  </Accordion>
+
+  <Accordion title="Cart Management" icon="basket-shopping">
+    - Add/remove products from cart
+    - Update product quantities
+    - Empty entire cart
+    - View cart total and item details
+  </Accordion>
+
+  <Accordion title="Reviews & Ratings" icon="star">
+    - Rate and review products after purchase
+    - Edit or delete own reviews
+    - View all reviews on products
+  </Accordion>
+
+  <Accordion title="Profile" icon="user-pen">
+    - Update profile information (name, email)
+    - Change password
+    - View purchase history
+  </Accordion>
+</AccordionGroup>
+
+### Key API Routes
+
+```bash
+# Shopping
+GET  /api/cliente/empresas                    # List all businesses
+GET  /api/cliente/empresa/{id}                 # View business details
+GET  /api/cliente/empresa/{id}/productos       # Browse products
+
+# Cart
+GET    /api/cliente/carrito                   # View cart
+POST   /api/cliente/carrito/agregar/{id}       # Add to cart
+PUT    /api/cliente/carrito/actualizar/{id}    # Update quantity
+DELETE /api/cliente/carrito/eliminar/{id}      # Remove item
+
+# Orders
+POST /api/cliente/pedidos                     # Place order
+GET  /api/cliente/mis-pedidos                  # View orders
+POST /api/cliente/pedidos/{id}/pagar           # Process payment
+POST /api/cliente/pedidos/{id}/cancelar        # Cancel order
+
+# Reviews
+POST   /api/cliente/calificar                 # Add review
+GET    /api/cliente/mis-calificaciones         # View own reviews
+PATCH  /api/cliente/calificaciones/{id}        # Edit review
+DELETE /api/cliente/calificaciones/{id}        # Delete review
+```
+
+### Model Relationships
+
+```php User.php:37-43
+public function carrito()
+{
+    return $this->belongsToMany(Producto::class, 'carrito_productos')
+            ->withPivot('cantidad')
+            ->withTimestamps();
+}
+```
+
+<Info>
+  Customers can only order from one business at a time. The cart is tied to a specific business via `empresa_id`.
+</Info>
+
+---
+
+## Business Role (`empresa`)
+
+Businesses are registered vendors who sell products through the platform.
+
+### Permissions
+
+<AccordionGroup>
+  <Accordion title="Product Management" icon="box">
+    - Create, read, update, and delete products
+    - Set prices, stock levels, and availability
+    - Upload product images
+    - Assign products to categories
+  </Accordion>
+
+  <Accordion title="Order Fulfillment" icon="clipboard-check">
+    - View incoming paid orders
+    - Update order status (Preparando → Listo → Entregado)
+    - Cannot modify unpaid orders
+    - View order details and customer information
+  </Accordion>
+
+  <Accordion title="Business Profile" icon="store">
+    - Update business information (name, NIT, address, phone)
+    - Upload/change logo and storefront photo
+    - Set business description
+    - Toggle open/closed status
+  </Accordion>
+
+  <Accordion title="Analytics" icon="chart-line">
+    - View sales dashboard with metrics
+    - See customer reviews and ratings
+    - Download PDF sales reports
+    - Track order history
+  </Accordion>
+</AccordionGroup>
+
+### Key API Routes
+
+```bash
+# Business Profile
+GET  /api/empresa/perfil                       # Get business details
+POST /api/empresa/update                       # Update profile
+POST /api/empresa/toggle-estado                # Open/close business
+
+# Product Management (CRUD)
+GET    /api/empresa/productos                   # List all products
+GET    /api/empresa/productos/{id}             # View product
+POST   /api/empresa/productos                  # Create product
+PUT    /api/empresa/productos/{id}             # Update product
+DELETE /api/empresa/productos/{id}             # Delete product
+
+# Order Management
+GET   /api/empresa/pedidos                     # View incoming orders
+PATCH /api/empresa/pedidos/{id}/estado         # Update order status
+
+# Analytics
+GET /api/empresa/dashboard                    # Sales metrics
+GET /api/empresa/calificaciones                # Customer reviews
+GET /api/empresa/dashboard/pdf                 # Download report
+```
+
+### Model Structure
+
+Each business is linked to a user account:
+
+```php Empresa.php:15-25
+protected $fillable = [
+    'user_id',
+    'nombre',
+    'nit',
+    'direccion',
+    'telefono',
+    'descripcion',
+    'logo',
+    'foto_local',
+    'is_open',
+];
+```
+
+<Warning>
+  Business users must complete the registration approval process before gaining access. See [Business Workflow](/concepts/business-workflow) for details.
+</Warning>
+
+---
+
+## Admin Role (`admin`)
+
+Administrators oversee the entire platform, manage user accounts, and approve new business registrations.
+
+### Permissions
+
+<AccordionGroup>
+  <Accordion title="Business Approvals" icon="check-circle">
+    - View all pending business applications
+    - Approve or reject business registrations
+    - Send activation emails to approved businesses
+    - Manage business accounts (edit, delete)
+  </Accordion>
+
+  <Accordion title="User Management" icon="users-gear">
+    - View all users (customers and admins)
+    - Edit user details (name, email, role)
+    - Reset user passwords
+    - Delete user accounts
+    - Cannot delete own admin account
+  </Accordion>
+
+  <Accordion title="Category Management" icon="tags">
+    - Create new product categories
+    - Delete existing categories
+    - Categories must have unique names
+  </Accordion>
+
+  <Accordion title="Platform Overview" icon="dashboard">
+    - View all orders across businesses
+    - Monitor platform activity
+    - Access complete user, business, and order lists
+  </Accordion>
+</AccordionGroup>
+
+### Key API Routes
+
+```bash
+# Dashboard
+GET /api/admin/solicitudes                     # Global dashboard data
+
+# Business Approval Workflow
+GET  /api/admin/solicitudes                    # Pending applications
+POST /api/admin/aprobar/{id}                   # Approve & send email
+POST /api/admin/rechazar/{id}                  # Reject application
+
+# Business Management
+GET    /api/admin/empresas                     # List all businesses
+PUT    /api/admin/empresas/{id}                # Edit business
+DELETE /api/admin/empresas/{id}                # Delete business
+
+# User Management
+GET    /api/admin/usuarios/{id}                # View user details
+PUT    /api/admin/usuarios/{id}                # Update user
+DELETE /api/admin/usuarios/{id}                # Delete user
+
+# Categories
+POST   /api/admin/categorias                  # Create category
+DELETE /api/admin/categorias/{id}              # Delete category
+```
+
+### Dashboard Response
+
+```php AdminController.php:24-35
+public function dashboard(): JsonResponse
+{
+    return response()->json([
+        'usuarios'    => User::where('rol', '!=', 'empresa')->get(),
+        'empresas'    => Empresa::all(),
+        'pedidos'     => Pedido::with('cliente', 'empresa')->get(),
+        'solicitudes' => SolicitudEmpresa::where('estado', 'pendiente')->get(),
+    ]);
+}
+```
+
+<Info>
+  The admin dashboard provides a comprehensive view of all platform activity, including users, businesses, orders, and pending applications.
+</Info>
+
+---
+
+## Role-Based Middleware
+
+All protected routes use Laravel Sanctum authentication:
+
+```php api.php:63
+Route::middleware('auth:sanctum')->group(function () {
+    // Role-specific route groups
+    Route::prefix('admin')->group(function () { /* ... */ });
+    Route::prefix('empresa')->group(function () { /* ... */ });
+    Route::prefix('cliente')->group(function () { /* ... */ });
+});
+```
+
+<Warning>
+  While routes are organized by role prefix, additional authorization logic should be implemented in controllers to ensure users can only access their allowed resources.
+</Warning>
+
+## Role Comparison
+
+| Feature | Customer | Business | Admin |
+|---------|----------|----------|-------|
+| Browse Products | ✓ | ✓ | ✓ |
+| Place Orders | ✓ | ✗ | ✗ |
+| Manage Inventory | ✗ | ✓ | ✗ |
+| Fulfill Orders | ✗ | ✓ | ✗ |
+| Approve Businesses | ✗ | ✗ | ✓ |
+| Manage Users | ✗ | ✗ | ✓ |
+| View Analytics | Own orders | Own business | Platform-wide |
+
+## Security Notes
+
+<Card title="Best Practices" icon="lock">
+  - Roles are assigned at registration and should not be changed arbitrarily
+  - Business accounts require admin approval before activation
+  - Admins cannot delete their own accounts to prevent lockout
+  - All routes require authentication via Sanctum tokens
+  - Role validation should be implemented in controller logic
+</Card>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Business Workflow" icon="diagram-project" href="/concepts/business-workflow">
+    Learn how businesses register and get approved
+  </Card>
+  <Card title="Order Lifecycle" icon="arrows-spin" href="/concepts/order-lifecycle">
+    Understand order states and transitions
+  </Card>
+</CardGroup>

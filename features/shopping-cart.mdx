@@ -1,0 +1,731 @@
+---
+title: 'Shopping Cart'
+description: 'Add to cart, update quantities, remove items, and checkout workflow in BeanQuick'
+icon: 'cart-shopping'
+---
+
+## Overview
+
+BeanQuick implements a persistent shopping cart system where each customer has a single cart that persists across sessions. The cart supports adding products, updating quantities, and validates stock availability in real-time.
+
+## Cart Model Structure
+
+### Carrito Model
+
+**Table:** `carritos`
+
+**Fillable Fields:**
+```php
+'user_id'
+```
+
+**Relationships:**
+- `usuario()` - belongsTo User
+- `productos()` - belongsToMany Producto (pivot table: `carrito_productos`)
+- `items()` - hasMany CarritoProducto (direct access to pivot records)
+
+### CarritoProducto Model (Pivot Table)
+
+**Table:** `carrito_productos`
+
+**Fillable Fields:**
+```php
+'carrito_id', 'producto_id', 'cantidad'
+```
+
+**Relationships:**
+- `carrito()` - belongsTo Carrito
+- `producto()` - belongsTo Producto
+
+**Appended Attributes:**
+- `subtotal` - Calculated as `precio * cantidad`
+
+**Subtotal Accessor:**
+```php
+public function getSubtotalAttribute()
+{
+    return $this->producto ? $this->producto->precio * $this->cantidad : 0;
+}
+```
+
+## Cart Operations
+
+### View Cart Contents
+
+**Endpoint:** `GET /api/carrito`
+
+**Authentication:** Required (cliente role)
+
+**Response:**
+
+```json
+[
+  {
+    "id": 12,
+    "nombre": "Café Latte",
+    "descripcion": "Café espresso con leche vaporizada",
+    "precio": 7500.0,
+    "stock": 50,
+    "imagen": "productos/latte.jpg",
+    "imagen_url": "http://localhost:8000/storage/productos/latte.jpg",
+    "empresa_id": 3,
+    "pivot": {
+      "carrito_id": 25,
+      "producto_id": 12,
+      "cantidad": 2,
+      "created_at": "2026-03-05T10:30:00.000000Z",
+      "updated_at": "2026-03-05T11:15:00.000000Z"
+    },
+    "empresa": {
+      "id": 3,
+      "nombre": "Café del Centro",
+      "logo": "empresas/logos/cafe-centro.jpg",
+      "is_open": true
+    }
+  }
+]
+```
+
+**Controller Logic:**
+
+```php
+public function index()
+{
+    $user = Auth::user();
+    // Create cart if doesn't exist
+    $carrito = Carrito::firstOrCreate(['user_id' => $user->id]);
+
+    $productos = $carrito->productos()
+        ->with('empresa')
+        ->withPivot('cantidad')
+        ->get()
+        ->map(function ($producto) {
+            $producto->precio = (float) $producto->precio;
+            $producto->stock = (int) $producto->stock;
+            return $producto;
+        });
+
+    return response()->json($productos);
+}
+```
+
+<Info>
+**Auto-Creation:** If a user doesn't have a cart yet, it's automatically created when they first access `/api/carrito` using `firstOrCreate()`.
+</Info>
+
+### Add Product to Cart
+
+**Endpoint:** `POST /api/carrito/agregar/{producto_id}`
+
+**Authentication:** Required (cliente role)
+
+**Request Body:**
+
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `cantidad` | integer | required, min:1 | Quantity to add |
+
+**Example Request:**
+
+```javascript
+const response = await fetch('/api/carrito/agregar/12', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    cantidad: 2
+  })
+});
+```
+
+**Success Response:**
+
+```json
+{
+  "message": "Producto agregado.",
+  "productos": [
+    // Updated cart contents
+  ]
+}
+```
+
+**Error Responses:**
+
+```json
+// Store is closed
+{
+  "error": "Esta tienda está cerrada actualmente."
+}
+
+// Insufficient stock
+{
+  "error": "Lo sentimos, solo quedan 5 unidades disponibles."
+}
+```
+
+### Business Rules for Adding to Cart
+
+<Steps>
+  <Step title="Load Product with Business Info">
+    The system loads the product along with its associated business (empresa) using eager loading:
+    ```php
+    $producto = Producto::with('empresa')->findOrFail($productoId);
+    ```
+  </Step>
+  
+  <Step title="Check if Store is Open">
+    Validates that the business is currently accepting orders:
+    ```php
+    if (!$producto->empresa->is_open) {
+        return response()->json([
+            'error' => 'Esta tienda está cerrada actualmente.'
+        ], 403);
+    }
+    ```
+  </Step>
+  
+  <Step title="Calculate Total Quantity">
+    If the product already exists in cart, adds the new quantity to existing:
+    ```php
+    $carritoProducto = $carrito->productos()
+        ->where('producto_id', $productoId)
+        ->first();
+    $cantidadActual = $carritoProducto ? $carritoProducto->pivot->cantidad : 0;
+    $nuevaCantidad = $cantidadActual + $request->cantidad;
+    ```
+  </Step>
+  
+  <Step title="Validate Stock Availability">
+    Checks if requested total quantity is available:
+    ```php
+    if ($producto->stock < $nuevaCantidad) {
+        return response()->json([
+            'error' => "Lo sentimos, solo quedan {$producto->stock} unidades disponibles."
+        ], 422);
+    }
+    ```
+  </Step>
+  
+  <Step title="Update or Create Cart Item">
+    Updates existing quantity or creates new cart item:
+    ```php
+    if ($carritoProducto) {
+        $carrito->productos()->updateExistingPivot(
+            $productoId, 
+            ['cantidad' => $nuevaCantidad]
+        );
+    } else {
+        $carrito->productos()->attach(
+            $productoId, 
+            ['cantidad' => $request->cantidad]
+        );
+    }
+    ```
+  </Step>
+</Steps>
+
+**Controller Logic:**
+
+```php
+public function agregar(Request $request, $productoId): JsonResponse
+{
+    $request->validate(['cantidad' => 'required|integer|min:1']);
+
+    // Load product with empresa
+    $producto = Producto::with('empresa')->findOrFail($productoId);
+
+    // Block closed stores
+    if (!$producto->empresa->is_open) {
+        return response()->json([
+            'error' => 'Esta tienda está cerrada actualmente.'
+        ], 403);
+    }
+
+    $user = Auth::user();
+    $carrito = Carrito::firstOrCreate(['user_id' => $user->id]);
+    
+    $carritoProducto = $carrito->productos()
+        ->where('producto_id', $productoId)
+        ->first();
+    $cantidadActual = $carritoProducto ? $carritoProducto->pivot->cantidad : 0;
+    $nuevaCantidad = $cantidadActual + $request->cantidad;
+
+    // Validate stock
+    if ($producto->stock < $nuevaCantidad) {
+        return response()->json([
+            'error' => "Lo sentimos, solo quedan {$producto->stock} unidades disponibles."
+        ], 422);
+    }
+
+    // Update or create
+    if ($carritoProducto) {
+        $carrito->productos()->updateExistingPivot(
+            $productoId, 
+            ['cantidad' => $nuevaCantidad]
+        );
+    } else {
+        $carrito->productos()->attach(
+            $productoId, 
+            ['cantidad' => $request->cantidad]
+        );
+    }
+
+    return response()->json([
+        'message' => 'Producto agregado.',
+        'productos' => $this->obtenerProductosCarrito($carrito)
+    ]);
+}
+```
+
+### Update Cart Item Quantity
+
+**Endpoint:** `PUT /api/carrito/actualizar/{producto_id}`
+
+**Authentication:** Required (cliente role)
+
+**Request Body:**
+
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `cantidad` | integer | required, min:1 | New quantity (replaces existing) |
+
+**Example Request:**
+
+```javascript
+const response = await fetch('/api/carrito/actualizar/12', {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    cantidad: 3 // Set to 3 (not add 3)
+  })
+});
+```
+
+**Success Response:**
+
+```json
+{
+  "message": "Cantidad actualizada.",
+  "productos": [
+    // Updated cart contents
+  ]
+}
+```
+
+**Error Responses:**
+
+```json
+// Store closed
+{
+  "error": "No puedes modificar productos de una tienda cerrada."
+}
+
+// Insufficient stock
+{
+  "error": "Stock insuficiente."
+}
+```
+
+**Controller Logic:**
+
+```php
+public function actualizar(Request $request, $productoId): JsonResponse
+{
+    $request->validate(['cantidad' => 'required|integer|min:1']);
+
+    // Load product with empresa
+    $producto = Producto::with('empresa')->findOrFail($productoId);
+
+    // Block if store is closed
+    if (!$producto->empresa->is_open) {
+        return response()->json([
+            'error' => 'No puedes modificar productos de una tienda cerrada.'
+        ], 403);
+    }
+
+    // Validate stock
+    if ($producto->stock < $request->cantidad) {
+        return response()->json(['error' => "Stock insuficiente."], 422);
+    }
+
+    $carrito = Carrito::where('user_id', Auth::id())->first();
+    if ($carrito) {
+        $carrito->productos()->updateExistingPivot(
+            $productoId, 
+            ['cantidad' => $request->cantidad]
+        );
+    }
+
+    return response()->json([
+        'message' => 'Cantidad actualizada.',
+        'productos' => $this->obtenerProductosCarrito($carrito)
+    ]);
+}
+```
+
+<Warning>
+**Update vs Add:** The `actualizar` endpoint **replaces** the quantity, while `agregar` **adds** to the existing quantity. Make sure your frontend uses the correct endpoint based on user intent.
+</Warning>
+
+### Remove Product from Cart
+
+**Endpoint:** `DELETE /api/carrito/eliminar/{producto_id}`
+
+**Authentication:** Required (cliente role)
+
+**Success Response:**
+
+```json
+{
+  "message": "Eliminado.",
+  "productos": [
+    // Updated cart contents
+  ]
+}
+```
+
+**Controller Logic:**
+
+```php
+public function eliminar($productoId): JsonResponse
+{
+    $carrito = Carrito::where('user_id', Auth::id())->first();
+    if ($carrito) {
+        $carrito->productos()->detach($productoId);
+    }
+
+    return response()->json([
+        'message' => 'Eliminado.',
+        'productos' => $this->obtenerProductosCarrito($carrito)
+    ]);
+}
+```
+
+### Empty Cart (Clear All Items)
+
+**Endpoint:** `DELETE /api/carrito/vaciar`
+
+**Authentication:** Required (cliente role)
+
+**Success Response:**
+
+```json
+{
+  "message": "Vaciado.",
+  "productos": []
+}
+```
+
+**Controller Logic:**
+
+```php
+public function vaciar(): JsonResponse
+{
+    $carrito = Carrito::where('user_id', Auth::id())->first();
+    if ($carrito) {
+        $carrito->productos()->detach(); // Remove all products
+    }
+
+    return response()->json([
+        'message' => 'Vaciado.', 
+        'productos' => []
+    ]);
+}
+```
+
+<Info>
+**Auto-Empty on Payment:** The cart is automatically emptied when a payment is successfully confirmed via the Mercado Pago webhook.
+</Info>
+
+## Store Status Validation
+
+BeanQuick prevents customers from adding or modifying cart items from closed stores.
+
+### Business Open/Close Status
+
+Each business has an `is_open` boolean field in the `empresas` table:
+
+```php
+protected $casts = [
+    'is_open' => 'boolean',
+];
+```
+
+**Default Value:** `true` (open)
+
+### Validation Points
+
+1. **Adding to Cart:** Blocked if `is_open = false`
+2. **Updating Quantity:** Blocked if `is_open = false`
+3. **Checkout:** Validates all cart items belong to open stores
+
+## Cart Total Calculation
+
+Cart totals are typically calculated on the frontend, but here's the logic:
+
+```javascript
+function calculateCartTotal(productos) {
+  return productos.reduce((total, producto) => {
+    const subtotal = producto.precio * producto.pivot.cantidad;
+    return total + subtotal;
+  }, 0);
+}
+
+// Example usage
+const total = calculateCartTotal(cartProducts);
+console.log(`Total: $${total.toFixed(2)}`);
+```
+
+## Multi-Store Cart Handling
+
+<Warning>
+**Important Limitation:** BeanQuick's current checkout process handles **one store at a time**. If a customer has products from multiple stores in their cart, they must complete checkout separately for each store.
+</Warning>
+
+### Checkout Flow with Multiple Stores
+
+**Endpoint:** `GET /api/pedido/checkout`
+
+**Purpose:** Prepares checkout data (validates cart has items)
+
+**Endpoint:** `POST /api/pedido`
+
+**Required Fields:**
+- `empresa_id` - The store to checkout from
+- `hora_recogida` - Pickup time (format: `HH:mm`)
+
+**Process:**
+1. System filters cart products to only include items from the specified `empresa_id`
+2. Creates order only for that store's products
+3. Other stores' products remain in cart for subsequent checkout
+
+```php
+$productosTienda = $carrito->productos->filter(function ($producto) use ($request) {
+    return (int)$producto->empresa_id === (int)$request->empresa_id;
+});
+
+if ($productosTienda->isEmpty()) {
+    return response()->json([
+        'message' => 'No hay productos de esta empresa en tu carrito.'
+    ], 422);
+}
+```
+
+## Implementation Example
+
+### React Cart Component
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function ShoppingCart() {
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  const loadCart = async () => {
+    try {
+      const response = await fetch('/api/carrito', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      setCartItems(data);
+    } catch (error) {
+      console.error('Error loading cart:', error);
+    }
+  };
+
+  const updateQuantity = async (productoId, newQuantity) => {
+    if (newQuantity < 1) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/carrito/actualizar/${productoId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cantidad: newQuantity })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setCartItems(result.productos);
+      } else {
+        alert(result.error || result.message);
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeItem = async (productoId) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/carrito/eliminar/${productoId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        setCartItems(result.productos);
+      }
+    } catch (error) {
+      console.error('Error removing item:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateTotal = () => {
+    return cartItems.reduce((total, item) => {
+      return total + (item.precio * item.pivot.cantidad);
+    }, 0);
+  };
+
+  const groupByStore = () => {
+    const grouped = {};
+    cartItems.forEach(item => {
+      const empresaId = item.empresa_id;
+      if (!grouped[empresaId]) {
+        grouped[empresaId] = {
+          empresa: item.empresa,
+          productos: []
+        };
+      }
+      grouped[empresaId].productos.push(item);
+    });
+    return Object.values(grouped);
+  };
+
+  const storeGroups = groupByStore();
+
+  return (
+    <div className="cart-container">
+      <h2>Mi Carrito</h2>
+      
+      {cartItems.length === 0 ? (
+        <p>Tu carrito está vacío</p>
+      ) : (
+        <>
+          {storeGroups.map((group, idx) => (
+            <div key={idx} className="store-group">
+              <h3>{group.empresa.nombre}</h3>
+              {!group.empresa.is_open && (
+                <div className="alert alert-warning">
+                  Esta tienda está cerrada actualmente
+                </div>
+              )}
+              
+              {group.productos.map(item => (
+                <div key={item.id} className="cart-item">
+                  <img src={item.imagen_url} alt={item.nombre} />
+                  <div className="item-details">
+                    <h4>{item.nombre}</h4>
+                    <p>${item.precio.toFixed(2)}</p>
+                    <div className="quantity-controls">
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.pivot.cantidad - 1)}
+                        disabled={loading}
+                      >
+                        -
+                      </button>
+                      <span>{item.pivot.cantidad}</span>
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.pivot.cantidad + 1)}
+                        disabled={loading || item.pivot.cantidad >= item.stock}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <p className="subtotal">
+                      Subtotal: ${(item.precio * item.pivot.cantidad).toFixed(2)}
+                    </p>
+                    {item.pivot.cantidad >= item.stock && (
+                      <p className="stock-warning">Stock máximo alcanzado</p>
+                    )}
+                  </div>
+                  <button 
+                    className="remove-btn"
+                    onClick={() => removeItem(item.id)}
+                    disabled={loading}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              ))}
+              
+              <button 
+                className="checkout-btn"
+                onClick={() => window.location.href = `/checkout/${group.empresa.id}`}
+                disabled={!group.empresa.is_open}
+              >
+                Proceder al pago - {group.empresa.nombre}
+              </button>
+            </div>
+          ))}
+          
+          <div className="cart-summary">
+            <h3>Total General: ${calculateTotal().toFixed(2)}</h3>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default ShoppingCart;
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Real-Time Stock Validation" icon="boxes-stacked">
+    Always validate stock on the backend before adding/updating cart items. Never trust frontend stock values.
+  </Card>
+  
+  <Card title="Store Status Checks" icon="store">
+    Display clear warnings when stores are closed. Disable checkout for closed stores.
+  </Card>
+  
+  <Card title="Optimistic UI Updates" icon="bolt">
+    Update the UI immediately on user action, then revert if the API call fails for better UX.
+  </Card>
+  
+  <Card title="Group by Store" icon="layer-group">
+    Display cart items grouped by store to make it clear that checkout is per-store.
+  </Card>
+</CardGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Product Management" icon="box" href="/features/product-management">
+    Learn about product stock management and validation
+  </Card>
+  
+  <Card title="Order Management" icon="receipt" href="/features/order-management">
+    Understand the checkout and order creation process
+  </Card>
+  
+  <Card title="Payments" icon="credit-card" href="/features/payments">
+    Learn about payment processing and cart clearing after successful payment
+  </Card>
+</CardGroup>

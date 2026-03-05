@@ -1,0 +1,332 @@
+---
+title: 'Customer Guide'
+description: 'Complete guide for BeanQuick customers - browse cafes, order products, track orders, and leave reviews'
+icon: 'user'
+---
+
+## Welcome to BeanQuick!
+
+BeanQuick is your go-to platform for discovering local coffee shops and placing orders for pickup. This guide will walk you through everything you need to know as a customer.
+
+---
+
+## Getting Started
+
+<Steps>
+  <Step title="Create Your Account">
+    Navigate to the registration page and create your customer account:
+    
+    - Provide your name, email, and password
+    - Verify your email address by clicking the activation link sent to your inbox
+    - Once verified, you can log in to your account
+  </Step>
+  
+  <Step title="Browse Available Cafes">
+    After logging in, you'll land on the Customer Dashboard where you can:
+    
+    - View all active coffee shops in your area
+    - See which shops are currently open (indicated by green "Abierta ahora" badge)
+    - Use the search bar to find specific cafes by name
+    - Check ratings for each establishment (displayed with star icons)
+  </Step>
+  
+  <Step title="Explore a Shop's Menu">
+    Click on any cafe card to visit their store page and browse their full product catalog.
+  </Step>
+</Steps>
+
+---
+
+## Browsing & Ordering
+
+### Viewing a Cafe's Store
+
+When you enter a cafe's store page (`/tienda/:id`), you'll see:
+
+<CardGroup cols={2}>
+  <Card title="Store Header" icon="store">
+    - Business logo and banner image
+    - Store name and address
+    - Open/closed status indicator
+  </Card>
+  
+  <Card title="Product Filters" icon="filter">
+    - Search bar to find products by name
+    - Category dropdown to filter by product type
+    - Real-time filtering as you type
+  </Card>
+</CardGroup>
+
+### Product Information
+
+Each product card displays:
+
+- **Product image**: High-quality photo of the item
+- **Name and description**: What you're ordering
+- **Price**: Listed in local currency
+- **Rating**: Average customer rating with star display
+- **Stock availability**: Shows remaining quantity
+- **Add to cart button**: Disabled if out of stock or store is closed
+
+<Warning>
+  Products that are out of stock will show an "AGOTADO" badge and cannot be added to cart. If you've already added the maximum available stock to your cart, you'll see a "LÍMITE EN CARRITO" badge.
+</Warning>
+
+### Adding Items to Cart
+
+<Steps>
+  <Step title="Select Products">
+    Click the "Agregar" button on any product to add it to your cart. The floating cart icon will automatically open to show your items.
+  </Step>
+  
+  <Step title="Manage Cart Quantities">
+    In the floating cart panel:
+    
+    - Use `+` and `-` buttons to adjust quantities
+    - Click the trash icon to remove items
+    - View real-time total price updates
+    - See how many items are in your cart
+  </Step>
+  
+  <Step title="Proceed to Checkout">
+    When ready, click "Ir a Checkout" to finalize your order.
+  </Step>
+</Steps>
+
+---
+
+## Placing an Order
+
+### Checkout Process
+
+On the checkout page (`/cliente/checkout`):
+
+1. **Review your order**: See all products, quantities, and prices
+2. **Enter delivery address**: Provide the address where you'll pick up your order
+3. **Confirm payment**: Click "Confirmar y Pagar" to submit your order
+
+<Info>
+  Once confirmed, your order is sent to the business immediately. You'll receive an order confirmation and can track its status in real-time.
+</Info>
+
+### Order States
+
+Your order will progress through these stages:
+
+<Steps>
+  <Step title="Pagado (Paid)">
+    Your order has been received and payment confirmed. The business will begin preparing your items shortly.
+  </Step>
+  
+  <Step title="Preparando (Preparing)">
+    The cafe is actively preparing your order. This is when your coffee is being made!
+  </Step>
+  
+  <Step title="Listo (Ready)">
+    Your order is complete and ready for pickup at the specified address.
+  </Step>
+  
+  <Step title="Entregado (Delivered)">
+    You've picked up your order. You can now leave a review!
+  </Step>
+</Steps>
+
+---
+
+## Managing Your Orders
+
+### Viewing Order History
+
+Access your order history from the navigation menu by clicking "Mis Pedidos" (`/cliente/mis-pedidos`).
+
+**Features:**
+
+<CardGroup cols={2}>
+  <Card title="Order Filters" icon="funnel">
+    Filter orders by status:
+    - Todos (All)
+    - Pendiente (Pending)
+    - Preparando (Preparing)
+    - Listo (Ready)
+    - Entregado (Delivered)
+    - Cancelado (Cancelled)
+  </Card>
+  
+  <Card title="Order Details" icon="list">
+    Each order shows:
+    - Order number and cafe logo
+    - Status badge with color coding
+    - Pickup time
+    - Total price
+    - Business address
+  </Card>
+</CardGroup>
+
+### Expanding Order Details
+
+Click on any order to expand and view:
+
+- Full product list with images
+- Quantity for each item
+- Individual product prices
+- Delivery address
+
+### Canceling Orders
+
+You can cancel orders that are in "Pendiente" (Pending) status:
+
+1. Click on the order to expand details
+2. Click the "Cancelar Pedido" button
+3. Confirm the cancellation in the popup dialog
+
+<Warning>
+  Once an order moves to "Preparando" status, it cannot be cancelled by customers. You'll need to contact the business directly.
+</Warning>
+
+---
+
+## Rating Products & Leaving Reviews
+
+### When Can You Rate?
+
+You can rate products only after your order has been marked as "Entregado" (Delivered).
+
+### How to Leave a Review
+
+<Steps>
+  <Step title="Open Delivered Order">
+    Go to "Mis Pedidos" and find an order with "Entregado" status. Click to expand the order details.
+  </Step>
+  
+  <Step title="Click 'Calificar' Button">
+    Each product in the order will have a "Calificar" button with a star icon. Click it to open the rating modal.
+  </Step>
+  
+  <Step title="Rate the Product">
+    In the rating modal:
+    
+    - Click on stars to select your rating (1-5 stars)
+    - Add an optional comment describing your experience
+    - Click "Enviar Calificación" to submit
+  </Step>
+  
+  <Step title="Confirmation">
+    Once submitted, the button changes to "Calificado" with a checkmark, and you cannot rate the same product again.
+  </Step>
+</Steps>
+
+<Info>
+  Your ratings help other customers make informed decisions and help businesses improve their products!
+</Info>
+
+### Managing Your Reviews
+
+View all your submitted reviews from "Mis Calificaciones" (`/cliente/mis-calificaciones`) in the navigation menu.
+
+---
+
+## Profile Management
+
+### Updating Your Information
+
+Access your profile from "Perfil" in the navigation menu (`/cliente/perfil`).
+
+**You can update:**
+
+- Display name
+- Email address
+- Password (enter new password to change)
+- Contact information
+
+<Tip>
+  Keep your email updated to receive important order notifications and updates from BeanQuick.
+</Tip>
+
+---
+
+## Tips for Best Experience
+
+<AccordionGroup>
+  <Accordion title="Check Store Hours" icon="clock">
+    Always verify if a store is open before placing an order. Closed stores will display a warning message and disable the ability to add items to cart.
+  </Accordion>
+  
+  <Accordion title="Monitor Stock Levels" icon="boxes-stacked">
+    Popular items may run out quickly. The platform shows real-time stock availability, so order early in the day for best selection.
+  </Accordion>
+  
+  <Accordion title="Read Reviews" icon="star">
+    Check product ratings and reviews from other customers to discover the best items at each cafe.
+  </Accordion>
+  
+  <Accordion title="Pickup Times" icon="clock">
+    Pay attention to the pickup time on your order. Arrive promptly to ensure you receive fresh products.
+  </Accordion>
+  
+  <Accordion title="Leave Feedback" icon="comment">
+    After receiving your order, take a moment to rate the products. Your feedback supports local businesses and helps other customers.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+  <Accordion title="Can't Add Items to Cart" icon="circle-exclamation">
+    **Possible reasons:**
+    - Store is currently closed
+    - Product is out of stock
+    - You've already added maximum available quantity to cart
+    
+    **Solution:** Check the product badge and store status. Wait until the store opens or choose alternative products.
+  </Accordion>
+  
+  <Accordion title="Order Not Showing Up" icon="circle-exclamation">
+    **Solution:** 
+    - Refresh the "Mis Pedidos" page
+    - Check your internet connection
+    - Verify you're logged into the correct account
+    - Contact the business if the issue persists
+  </Accordion>
+  
+  <Accordion title="Can't Cancel Order" icon="circle-exclamation">
+    **Solution:** Orders can only be cancelled in "Pendiente" status. Once preparation begins, contact the business directly via the address shown in your order details.
+  </Accordion>
+  
+  <Accordion title="Can't Submit Rating" icon="circle-exclamation">
+    **Solution:** Ratings can only be submitted for "Entregado" orders. Each product can only be rated once per order. If you've already rated a product, the button will show "Calificado."
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Support
+
+If you encounter any issues not covered in this guide:
+
+<CardGroup cols={2}>
+  <Card title="Business Contact" icon="store">
+    Contact the specific cafe through the address listed on their store page or in your order details.
+  </Card>
+  
+  <Card title="Platform Support" icon="headset">
+    For technical issues with the BeanQuick platform, check the main navigation menu for support options.
+  </Card>
+</CardGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Platform Overview" icon="compass" href="/introduction">
+    Learn more about the BeanQuick platform
+  </Card>
+  
+  <Card title="Business Guide" icon="briefcase" href="/guides/business-guide">
+    Interested in joining as a business? Learn more
+  </Card>
+</CardGroup>

@@ -1,0 +1,554 @@
+---
+title: 'Business Guide'
+description: 'Complete guide for BeanQuick businesses - set up your store, manage products, process orders, and view analytics'
+icon: 'store'
+---
+
+## Welcome, Business Owner!
+
+BeanQuick helps local coffee shops reach more customers through a modern online ordering platform. This guide covers everything you need to run your business successfully on BeanQuick.
+
+---
+
+## Getting Started
+
+<Steps>
+  <Step title="Register Your Business">
+    Navigate to the business registration page (`/registro-empresa`) and provide:
+    
+    - Business name and NIT (tax ID)
+    - Owner email and password
+    - Business description
+    - Phone number and address
+    - **Upload required images:**
+      - Business logo (displayed on store cards)
+      - Store photo (banner image for your store page)
+  </Step>
+  
+  <Step title="Wait for Admin Approval">
+    After submitting your application:
+    
+    - An administrator will review your business information
+    - You'll receive an email notification once approved
+    - Click the activation link in the email to activate your account
+  </Step>
+  
+  <Step title="First Login">
+    Once approved and activated:
+    
+    - Log in using your registered email and password
+    - You'll be directed to your Business Dashboard
+    - Begin setting up your product catalog
+  </Step>
+</Steps>
+
+---
+
+## Business Dashboard Overview
+
+Your dashboard (`/empresa/dashboard`) provides real-time insights into your business performance.
+
+### Store Status Control
+
+<Card title="Open/Close Toggle" icon="toggle-on">
+  At the top of your dashboard, you'll see your current store status:
+  
+  - **🟢 Tienda Abierta**: Customers can browse and place orders
+  - **🔴 Tienda Cerrada**: Customers can view your menu but cannot order
+  
+  Click "Abrir tienda" or "Cerrar tienda" to toggle your status. Close your store when you're not accepting orders.
+</Card>
+
+<Warning>
+  When your store is closed, customers cannot add items to cart or complete checkout. This is useful for managing capacity or closing during off-hours.
+</Warning>
+
+### Performance Metrics
+
+Your dashboard displays key performance indicators:
+
+<CardGroup cols={3}>
+  <Card title="Ventas" icon="money-bill-wave">
+    Total sales for selected time period. Shows revenue from completed orders.
+  </Card>
+  
+  <Card title="Reputación" icon="star">
+    Average customer rating (1-5 stars). Click to view detailed customer feedback.
+  </Card>
+  
+  <Card title="Total Feedback" icon="comments">
+    Number of product ratings received from customers.
+  </Card>
+</CardGroup>
+
+### Time Period Filters
+
+Analyze your business performance across different timeframes:
+
+<Tabs>
+  <Tab title="Hoy (Today)">
+    View today's sales and activity. Great for monitoring daily operations.
+  </Tab>
+  
+  <Tab title="Semana (Week)">
+    See weekly trends with line chart visualization showing daily breakdown.
+  </Tab>
+  
+  <Tab title="Mes (Month)">
+    Monthly overview using bar chart for easier comparison of weeks.
+  </Tab>
+  
+  <Tab title="Año (Year)">
+    Annual performance with monthly breakdowns to identify seasonal trends.
+  </Tab>
+</Tabs>
+
+### Sales Analytics
+
+The main chart adapts based on your selected period:
+
+- **Line chart** for daily/weekly views (shows trends over time)
+- **Bar chart** for monthly/yearly views (easier to compare periods)
+- Click the expand icon to view full-screen chart
+
+### Product Rankings
+
+See your best-selling products:
+
+- Ranked by number of units sold
+- Shows product image, name, price
+- Track which items are most popular
+
+### Recent Orders
+
+Quick view of latest customer activity:
+
+- Customer names and avatars
+- Order timestamps
+- Order totals
+
+### Customer Reviews
+
+<Info>
+  Click on the "Reputación" or "Total Feedback" cards to open the customer reviews modal.
+</Info>
+
+The reviews modal displays:
+
+- Customer names
+- Star ratings for each review
+- Written comments (if provided)
+- Product name being reviewed
+- Review submission date
+
+### Downloading Reports
+
+Generate PDF reports for record-keeping:
+
+1. Select your desired time period (Hoy, Semana, Mes, Año)
+2. Click "📄 Descargar Reporte PDF"
+3. PDF downloads automatically with all current dashboard data
+
+---
+
+## Product Management
+
+### Viewing Your Products
+
+Access your product catalog from "Mis Productos" (`/empresa/productos`) in the navigation menu.
+
+**The product table displays:**
+
+<CardGroup cols={2}>
+  <Card title="Product Information" icon="info-circle">
+    - Product image thumbnail
+    - Name and description preview
+    - Category assignment
+  </Card>
+  
+  <Card title="Inventory & Pricing" icon="box">
+    - Current stock level with color-coded badges
+    - Product price
+    - Action buttons (Edit/Delete)
+  </Card>
+</CardGroup>
+
+### Stock Level Indicators
+
+Products display color-coded stock badges:
+
+<Tabs>
+  <Tab title="Verde (Green)">
+    **Stock > 10 units**: Healthy inventory levels
+  </Tab>
+  
+  <Tab title="Naranja (Orange)">
+    **Stock ≤ 10 units**: Low stock warning, consider restocking
+  </Tab>
+  
+  <Tab title="Rojo (Red)">
+    **Stock = 0**: Out of stock, product unavailable to customers
+  </Tab>
+</Tabs>
+
+### Adding New Products
+
+<Steps>
+  <Step title="Navigate to Add Product">
+    Click the "+ Agregar Producto" button on your products page, or navigate to `/empresa/productos/agregar`.
+  </Step>
+  
+  <Step title="Upload Product Image">
+    On the left side of the form:
+    
+    - Click "Subir Imagen" to select an image file
+    - Preview appears immediately
+    - Supported formats: JPG, PNG, JPEG
+    - Recommended: Square images, at least 500x500px
+  </Step>
+  
+  <Step title="Fill Product Details">
+    Complete the form on the right:
+    
+    **Required fields:**
+    - **Nombre**: Product name (e.g., "Cappuccino Vainilla")
+    - **Descripción**: Detailed description of the product
+    - **Precio**: Price in local currency
+    - **Stock**: Number of units available
+    - **Categoría**: Select from dropdown (Café, Postre, Bebida, etc.)
+  </Step>
+  
+  <Step title="Publish Product">
+    Click "Publicar Producto" to add the item to your store. It becomes immediately visible to customers.
+  </Step>
+</Steps>
+
+<Tip>
+  Write compelling descriptions! Customers can't taste before ordering, so describe flavors, ingredients, and what makes your product special.
+</Tip>
+
+### Editing Products
+
+<Steps>
+  <Step title="Access Edit Mode">
+    On the products list, click the pencil (Edit) icon next to any product. You'll be taken to `/empresa/productos/editar/:id`.
+  </Step>
+  
+  <Step title="Modify Information">
+    The form pre-fills with current product data:
+    
+    - Update any field as needed
+    - Current product image is displayed
+    - Optionally upload a new image to replace it
+  </Step>
+  
+  <Step title="Save Changes">
+    Click "Guardar Cambios" to update the product. Changes are reflected immediately on your store.
+  </Step>
+</Steps>
+
+### Deleting Products
+
+<Warning>
+  Deleting a product is permanent and cannot be undone. The product will be removed from all customer views and cannot be ordered.
+</Warning>
+
+1. Click the trash icon next to the product
+2. Confirm deletion in the popup dialog
+3. Product is immediately removed from your catalog
+
+---
+
+## Order Management
+
+### Accessing Order Dashboard
+
+Navigate to "Pedidos" (`/empresa/pedidos`) to manage incoming orders.
+
+**Key features:**
+
+- Real-time order updates (refreshes every 30 seconds)
+- Filter orders by status using tabs
+- Expandable order details
+- One-click status updates
+
+### Order Status Flow
+
+Orders progress through defined stages:
+
+<Steps>
+  <Step title="Pagado (Paid)">
+    **Customer action:** Order placed and paid
+    
+    **Your action:** Click "Empezar Cocina" when you begin preparing the order
+    
+    **What this means:** New order received, needs to be started
+  </Step>
+  
+  <Step title="Preparando (Preparing)">
+    **Your action:** Click "Marcar como Listo" when order is ready for pickup
+    
+    **What this means:** Order is currently being prepared in your kitchen
+  </Step>
+  
+  <Step title="Listo (Ready)">
+    **Your action:** Click "Confirmar Entrega" when customer picks up the order
+    
+    **What this means:** Order is complete and waiting for customer pickup
+  </Step>
+  
+  <Step title="Entregado (Delivered)">
+    **Final status:** Order complete
+    
+    **What this means:** Customer has received their order. No further action needed.
+  </Step>
+</Steps>
+
+### Order Status Tabs
+
+Filter orders by clicking status tabs at the top:
+
+- **Pagado**: New orders waiting to be started
+- **Preparando**: Orders currently in progress
+- **Listo**: Completed orders ready for pickup
+- **Entregado**: Successfully delivered orders
+- **Cancelado**: Cancelled orders (by you or customer)
+
+Each tab shows a count of orders in that status.
+
+### Managing Individual Orders
+
+<AccordionGroup>
+  <Accordion title="Viewing Order Details" icon="eye">
+    Each order card displays:
+    
+    **Compact view:**
+    - Order number
+    - Customer name
+    - Pickup time
+    - Total price
+    - Number of products
+    
+    Click "X productos" with dropdown icon to expand full details.
+    
+    **Expanded view:**
+    - Individual product images
+    - Product names and quantities
+    - Unit prices for each item
+  </Accordion>
+  
+  <Accordion title="Updating Order Status" icon="arrow-right">
+    Click the action button for each order based on current status:
+    
+    - **Pagado** → "Empezar Cocina" (Start preparing)
+    - **Preparando** → "Marcar como Listo" (Mark ready)
+    - **Listo** → "Confirmar Entrega" (Confirm pickup)
+    
+    Status updates immediately for both you and the customer.
+  </Accordion>
+  
+  <Accordion title="Canceling Orders" icon="times-circle">
+    You can cancel orders in Pagado, Preparando, or Listo status:
+    
+    1. Click "Cancelar Pedido" (appears as underlined text below main action button)
+    2. Confirm cancellation in dialog
+    3. Order moves to "Cancelado" status
+    
+    <Warning>
+      Only cancel orders when necessary (e.g., out of ingredients, closing early). Frequent cancellations harm your business reputation.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+### Order Management Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Respond Quickly" icon="bolt">
+    Update order status promptly so customers know their order progress. This builds trust and reduces support inquiries.
+  </Card>
+  
+  <Card title="Check Stock" icon="boxes-stacked">
+    Before starting preparation, verify you have ingredients. Cancel early if needed rather than delaying.
+  </Card>
+  
+  <Card title="Accurate Timing" icon="clock">
+    Mark orders as "Listo" only when they're actually ready. This prevents customer frustration.
+  </Card>
+  
+  <Card title="Monitor Dashboard" icon="desktop">
+    Keep the order page open during business hours. Orders auto-refresh every 30 seconds.
+  </Card>
+</CardGroup>
+
+---
+
+## Business Analytics
+
+### Understanding Your Dashboard Metrics
+
+<Tabs>
+  <Tab title="Sales Trends">
+    **Line Chart (Day/Week):**
+    - Identifies peak hours and days
+    - Spot trends in customer ordering patterns
+    - Plan inventory based on historical demand
+    
+    **Bar Chart (Month/Year):**
+    - Compare performance across longer periods
+    - Identify seasonal fluctuations
+    - Set realistic sales targets
+  </Tab>
+  
+  <Tab title="Product Performance">
+    **Top Products Ranking:**
+    - Focus inventory on popular items
+    - Consider promoting underperforming items
+    - Plan product development based on preferences
+    - Calculate profit margins on best-sellers
+  </Tab>
+  
+  <Tab title="Customer Feedback">
+    **Review Analysis:**
+    - Identify highly-rated products to feature
+    - Address negative feedback proactively
+    - Track improvement over time
+    - Use testimonials in marketing
+  </Tab>
+</Tabs>
+
+### Using Data to Grow
+
+<AccordionGroup>
+  <Accordion title="Optimize Inventory" icon="chart-line">
+    - Stock more of your top-selling products
+    - Reduce stock for slow-moving items
+    - Monitor orange "low stock" warnings
+    - Prevent stockouts during peak times
+  </Accordion>
+  
+  <Accordion title="Improve Ratings" icon="star">
+    - Read all customer reviews regularly
+    - Address common complaints in reviews
+    - Thank customers for positive feedback
+    - Make recipe adjustments based on feedback
+  </Accordion>
+  
+  <Accordion title="Strategic Pricing" icon="dollar-sign">
+    - Compare pricing with total sales volume
+    - Test price adjustments on low-demand items
+    - Bundle popular items for better margins
+    - Consider promotional pricing during slow periods
+  </Accordion>
+  
+  <Accordion title="Capacity Management" icon="gauge">
+    - Use store open/close toggle strategically
+    - Close temporarily if you're at capacity
+    - Plan staffing based on historical order volume
+    - Adjust hours based on order patterns
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Business Profile
+
+### Updating Business Information
+
+Access your business profile settings from the layout sidebar:
+
+**Updatable fields:**
+- Business name
+- Contact phone number
+- Store address
+- Business description
+- Logo and store photos
+
+<Info>
+  Logo and store photos are visible to all customers. High-quality images significantly improve customer trust and order rates.
+</Info>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Orders Not Appearing" icon="circle-exclamation">
+    **Solutions:**
+    - Check that your store status is "Abierta" (Open)
+    - Refresh the orders page
+    - Orders auto-refresh every 30 seconds
+    - Verify internet connection
+  </Accordion>
+  
+  <Accordion title="Can't Update Product Stock" icon="circle-exclamation">
+    **Solutions:**
+    - Ensure you're editing the product, not just viewing
+    - Check that stock is a positive number
+    - Save changes before navigating away
+    - Try logging out and back in if issue persists
+  </Accordion>
+  
+  <Accordion title="Dashboard Not Showing Data" icon="circle-exclamation">
+    **Solutions:**
+    - Try different time period filters
+    - New businesses may not have historical data
+    - Charts populate after you receive orders
+    - Refresh the page to reload data
+  </Accordion>
+  
+  <Accordion title="Customer Can't Order" icon="circle-exclamation">
+    **Possible causes:**
+    - Store is set to "Cerrada" (Closed)
+    - Products are out of stock
+    - Business account is inactive
+    
+    **Solutions:**
+    - Toggle store to "Abierta"
+    - Update product stock levels
+    - Contact admin if account status issue
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Success Tips
+
+<CardGroup cols={2}>
+  <Card title="Quality Photos" icon="camera">
+    Invest in good product photography. Clear, appetizing images dramatically increase order rates.
+  </Card>
+  
+  <Card title="Detailed Descriptions" icon="pen">
+    Write specific descriptions including ingredients, flavors, and serving sizes. Help customers make informed choices.
+  </Card>
+  
+  <Card title="Consistent Availability" icon="calendar-check">
+    Maintain regular hours and keep your store open status updated. Reliability builds customer loyalty.
+  </Card>
+  
+  <Card title="Monitor Stock" icon="warehouse">
+    Update stock levels throughout the day. Nothing frustrates customers more than ordering unavailable items.
+  </Card>
+  
+  <Card title="Quick Responses" icon="stopwatch">
+    Update order status promptly. Fast service leads to better reviews and repeat customers.
+  </Card>
+  
+  <Card title="Engage with Reviews" icon="comments">
+    Read every review. Use feedback to continuously improve your products and service.
+  </Card>
+</CardGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/api/authentication">
+    Technical documentation for custom integrations
+  </Card>
+  
+  <Card title="Admin Guide" icon="shield" href="/guides/admin-guide">
+    Understand how platform administration works
+  </Card>
+</CardGroup>

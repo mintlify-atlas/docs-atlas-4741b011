@@ -1,0 +1,746 @@
+---
+title: 'Product Management'
+description: 'Complete CRUD operations for products, categories, and image management in BeanQuick'
+icon: 'box'
+---
+
+## Overview
+
+BeanQuick provides businesses with comprehensive product management capabilities including creating, reading, updating, and deleting products. Each product is associated with a category, includes pricing and stock information, and can have an image.
+
+## Product Model
+
+### Database Schema
+
+**Table:** `productos`
+
+**Fillable Fields:**
+```php
+'empresa_id', 'categoria_id', 'nombre', 'descripcion', 'precio', 'imagen', 'stock'
+```
+
+**Relationships:**
+- `empresa()` - belongsTo Empresa
+- `categoria()` - belongsTo Categoria
+- `carritos()` - belongsToMany Carrito (pivot: `carrito_productos`)
+- `pedidos()` - belongsToMany Pedido (pivot: `pedido_productos`)
+- `calificaciones()` - hasMany Calificacion
+
+**Casts:**
+```php
+'precio' => 'float',
+'stock' => 'integer'
+```
+
+**Appended Attributes:**
+- `imagen_url` - Full URL to product image (or placeholder if none)
+
+### Image URL Accessor
+
+```php
+public function getImagenUrlAttribute()
+{
+    return $this->imagen 
+        ? asset('storage/' . $this->imagen) 
+        : asset('images/placeholder-producto.png');
+}
+```
+
+## CRUD Operations
+
+### List All Products (Business Dashboard)
+
+**Endpoint:** `GET /api/empresa/productos`
+
+**Authentication:** Required (empresa role)
+
+**Returns:** All products belonging to the authenticated business
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "empresa_id": 5,
+    "categoria_id": 2,
+    "nombre": "Café Americano",
+    "descripcion": "Café negro preparado con granos colombianos",
+    "precio": 5000.0,
+    "stock": 100,
+    "imagen": "productos/abc123.jpg",
+    "imagen_url": "http://localhost:8000/storage/productos/abc123.jpg",
+    "created_at": "2026-03-05T10:30:00.000000Z",
+    "updated_at": "2026-03-05T10:30:00.000000Z",
+    "categoria": {
+      "id": 2,
+      "nombre": "Bebidas Calientes"
+    }
+  }
+]
+```
+
+**Controller Logic:**
+
+```php
+public function index(): JsonResponse
+{
+    $empresa = Empresa::where('user_id', Auth::id())->first();
+
+    if (!$empresa) {
+        return response()->json(['message' => 'No tienes una empresa vinculada.'], 404);
+    }
+
+    $productos = Producto::where('empresa_id', $empresa->id)
+        ->with('categoria')
+        ->get();
+
+    return response()->json($productos);
+}
+```
+
+### View Single Product
+
+**Endpoint:** `GET /api/empresa/productos/{id}`
+
+**Authentication:** Required (empresa role)
+
+**Authorization:** Product must belong to the authenticated business
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "empresa_id": 5,
+  "categoria_id": 2,
+  "nombre": "Café Americano",
+  "descripcion": "Café negro preparado con granos colombianos",
+  "precio": 5000.0,
+  "stock": 100,
+  "imagen": "productos/abc123.jpg",
+  "imagen_url": "http://localhost:8000/storage/productos/abc123.jpg"
+}
+```
+
+### Create Product
+
+**Endpoint:** `POST /api/empresa/productos`
+
+**Authentication:** Required (empresa role)
+
+**Request Fields:**
+
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `nombre` | string | required, max:255 | Product name |
+| `precio` | numeric | required | Product price |
+| `stock` | integer | required, min:0 | Available quantity |
+| `categoria_id` | integer | required, exists:categorias,id | Category ID |
+| `descripcion` | text | nullable | Product description |
+| `imagen` | file | nullable, image, max:2MB | Product image |
+
+**Example Request:**
+
+```javascript
+const formData = new FormData();
+formData.append('nombre', 'Café Americano');
+formData.append('precio', '5000');
+formData.append('stock', '100');
+formData.append('categoria_id', '2');
+formData.append('descripcion', 'Café negro preparado con granos colombianos');
+formData.append('imagen', imageFile);
+
+const response = await fetch('/api/empresa/productos', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  },
+  body: formData
+});
+```
+
+**Success Response:**
+
+```json
+{
+  "message": "Producto creado con éxito",
+  "producto": {
+    "id": 15,
+    "empresa_id": 5,
+    "categoria_id": 2,
+    "nombre": "Café Americano",
+    "descripcion": "Café negro preparado con granos colombianos",
+    "precio": 5000.0,
+    "stock": 100,
+    "imagen": "productos/xyz789.jpg",
+    "imagen_url": "http://localhost:8000/storage/productos/xyz789.jpg"
+  }
+}
+```
+
+**Controller Logic:**
+
+```php
+public function store(Request $request)
+{
+    $request->validate([
+        'nombre' => 'required|string|max:255',
+        'precio' => 'required|numeric',
+        'stock'  => 'required|integer|min:0',
+        'categoria_id' => 'required|exists:categorias,id',
+        'descripcion' => 'nullable|string',
+        'imagen' => 'nullable|image|max:2048',
+    ]);
+
+    $empresa = Empresa::where('user_id', Auth::id())->first();
+
+    $producto = new Producto();
+    $producto->nombre = $request->nombre;
+    $producto->descripcion = $request->descripcion;
+    $producto->precio = $request->precio;
+    $producto->stock = $request->stock;
+    $producto->empresa_id = $empresa->id;
+    $producto->categoria_id = $request->categoria_id;
+
+    if ($request->hasFile('imagen')) {
+        $producto->imagen = $request->file('imagen')->store('productos', 'public');
+    }
+
+    $producto->save();
+
+    return response()->json([
+        'message' => 'Producto creado con éxito',
+        'producto' => $producto
+    ], 201);
+}
+```
+
+<Info>
+**Image Storage:** Product images are stored in `storage/app/public/productos/` and publicly accessible via `public/storage/productos/`.
+</Info>
+
+### Update Product
+
+**Endpoint:** `PUT /api/empresa/productos/{id}`
+
+**Authentication:** Required (empresa role)
+
+**Authorization:** Product must belong to the authenticated business
+
+**Request Fields:** Same as create (all fields required)
+
+**Example Request:**
+
+```javascript
+const formData = new FormData();
+formData.append('nombre', 'Café Americano Premium');
+formData.append('precio', '6000');
+formData.append('stock', '150');
+formData.append('categoria_id', '2');
+formData.append('descripcion', 'Café negro premium con granos de altura');
+formData.append('_method', 'PUT'); // Laravel method spoofing
+
+// Only append imagen if user selected a new one
+if (newImageFile) {
+  formData.append('imagen', newImageFile);
+}
+
+const response = await fetch(`/api/empresa/productos/${productId}`, {
+  method: 'POST', // Use POST with _method spoofing
+  headers: {
+    'Authorization': `Bearer ${token}`
+  },
+  body: formData
+});
+```
+
+**Success Response:**
+
+```json
+{
+  "message": "¡Actualizado!",
+  "producto": {
+    "id": 15,
+    "nombre": "Café Americano Premium",
+    "precio": 6000.0,
+    "stock": 150,
+    "imagen_url": "http://localhost:8000/storage/productos/new-image.jpg"
+  }
+}
+```
+
+**Controller Logic:**
+
+```php
+public function update(Request $request, $id): JsonResponse
+{
+    $empresa = Empresa::where('user_id', Auth::id())->first();
+    $producto = Producto::where('id', $id)
+        ->where('empresa_id', $empresa->id)
+        ->first();
+
+    if (!$producto) {
+        return response()->json(['message' => 'No encontrado'], 404);
+    }
+
+    $request->validate([
+        'nombre' => 'required|string|max:255',
+        'precio' => 'required|numeric',
+        'stock'  => 'required|integer',
+        'categoria_id' => 'required|exists:categorias,id',
+    ]);
+
+    $producto->nombre = $request->input('nombre');
+    $producto->descripcion = $request->input('descripcion');
+    $producto->precio = $request->input('precio');
+    $producto->stock = $request->input('stock');
+    $producto->categoria_id = $request->input('categoria_id');
+
+    // Handle image update
+    if ($request->hasFile('imagen')) {
+        // Delete old image
+        if ($producto->imagen) {
+            Storage::disk('public')->delete($producto->imagen);
+        }
+        $producto->imagen = $request->file('imagen')->store('productos', 'public');
+    }
+
+    $producto->save();
+
+    return response()->json([
+        'message' => '¡Actualizado!',
+        'producto' => $producto
+    ]);
+}
+```
+
+<Warning>
+**Image Replacement:** When updating a product with a new image, the old image file is automatically deleted from storage to prevent accumulation of unused files.
+</Warning>
+
+### Delete Product
+
+**Endpoint:** `DELETE /api/empresa/productos/{id}`
+
+**Authentication:** Required (empresa role)
+
+**Authorization:** Product must belong to the authenticated business
+
+**Success Response:**
+
+```json
+{
+  "message": "Producto eliminado correctamente."
+}
+```
+
+**Controller Logic:**
+
+```php
+public function destroy($id): JsonResponse
+{
+    $empresa = Empresa::where('user_id', Auth::id())->first();
+    $producto = Producto::where('id', $id)
+        ->where('empresa_id', $empresa->id)
+        ->first();
+
+    if (!$producto) {
+        return response()->json(['message' => 'No autorizado.'], 403);
+    }
+
+    // Delete image file
+    if ($producto->imagen) {
+        Storage::disk('public')->delete($producto->imagen);
+    }
+
+    $producto->delete();
+
+    return response()->json(['message' => 'Producto eliminado correctamente.']);
+}
+```
+
+## Category Management
+
+### Categoria Model
+
+**Table:** `categorias`
+
+**Fillable Fields:**
+```php
+'nombre'
+```
+
+**Relationships:**
+- `productos()` - hasMany Producto
+
+### Create Category (Admin Only)
+
+**Endpoint:** `POST /api/admin/categorias`
+
+**Authentication:** Required (admin role)
+
+**Request Fields:**
+
+| Field | Validation | Description |
+|-------|------------|-------------|
+| `nombre` | required, string, unique:categorias,nombre | Category name (must be unique) |
+
+**Example Request:**
+
+```json
+{
+  "nombre": "Bebidas Frías"
+}
+```
+
+**Success Response:**
+
+```json
+{
+  "message": "Categoría creada correctamente.",
+  "categoria": {
+    "id": 5,
+    "nombre": "Bebidas Frías",
+    "created_at": "2026-03-05T14:20:00.000000Z",
+    "updated_at": "2026-03-05T14:20:00.000000Z"
+  }
+}
+```
+
+### Delete Category (Admin Only)
+
+**Endpoint:** `DELETE /api/admin/categorias/{id}`
+
+**Authentication:** Required (admin role)
+
+<Warning>
+**Cascade Deletion:** Deleting a category may affect products that reference it. Ensure proper foreign key constraints are configured in your database migrations.
+</Warning>
+
+**Success Response:**
+
+```json
+{
+  "message": "Categoría eliminada correctamente."
+}
+```
+
+## Featured Products (Home Page)
+
+BeanQuick displays the top 4 highest-rated products on the homepage.
+
+**Endpoint:** `GET /api/productos/destacados`
+
+**Authentication:** Not required (public endpoint)
+
+**Response:**
+
+```json
+[
+  {
+    "id": 12,
+    "nombre": "Café Latte",
+    "precio": 7500.0,
+    "imagen": "productos/latte.jpg",
+    "imagen_url": "http://localhost:8000/storage/productos/latte.jpg",
+    "empresa_id": 3,
+    "empresa": {
+      "id": 3,
+      "nombre": "Café del Centro",
+      "logo": "empresas/logos/cafe-centro.jpg",
+      "logo_url": "http://localhost:8000/storage/empresas/logos/cafe-centro.jpg"
+    },
+    "calificaciones_avg_estrellas": 4.8
+  },
+  {
+    "id": 8,
+    "nombre": "Cappuccino",
+    "precio": 8000.0,
+    "imagen_url": "http://localhost:8000/storage/productos/cappuccino.jpg",
+    "empresa": {
+      "nombre": "Espresso Bar",
+      "logo_url": "http://localhost:8000/storage/empresas/logos/espresso.jpg"
+    },
+    "calificaciones_avg_estrellas": 4.7
+  }
+  // ... 2 more products
+]
+```
+
+**Controller Logic:**
+
+```php
+public function destacados(): JsonResponse
+{
+    try {
+        // Load products with relationships
+        $productos = Producto::select('id', 'nombre', 'precio', 'imagen', 'empresa_id')
+            ->with(['empresa:id,nombre,logo', 'calificaciones:id,producto_id,estrellas'])
+            ->get();
+
+        $destacados = $productos->map(function ($producto) {
+            // Calculate average rating
+            $promedio = $producto->calificaciones->avg('estrellas');
+            $producto->calificaciones_avg_estrellas = $promedio ? round($promedio, 1) : 0;
+            
+            // Generate full logo URL for empresa
+            if ($producto->empresa) {
+                $producto->empresa->logo_url = $producto->empresa->logo 
+                    ? asset('storage/' . $producto->empresa->logo) 
+                    : asset('images/default-logo.png'); 
+            }
+
+            // Remove calificaciones to keep JSON light
+            unset($producto->calificaciones);
+            
+            return $producto;
+        })
+        // Filter only rated products and take top 4
+        ->filter(fn($p) => $p->calificaciones_avg_estrellas > 0)
+        ->sortByDesc('calificaciones_avg_estrellas')
+        ->take(4)
+        ->values();
+
+        return response()->json($destacados);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Error al procesar destacados',
+            'details' => $e->getMessage()
+        ], 500);
+    }
+}
+```
+
+## Stock Management
+
+### Stock Validation
+
+Stock is validated at multiple points in the order flow:
+
+1. **Adding to Cart** - Validates available stock before allowing add
+2. **Updating Cart** - Re-validates when customer changes quantity
+3. **Creating Order** - Final validation before order creation (order created but stock NOT deducted yet)
+4. **Payment Confirmation** - Stock is deducted only after payment is approved
+
+### Stock Deduction Flow
+
+<Steps>
+  <Step title="Order Created">
+    Order is created with `estado_pago: 'pendiente'`. Stock is validated but NOT deducted.
+  </Step>
+  
+  <Step title="Payment Processed">
+    Customer completes payment via Mercado Pago.
+  </Step>
+  
+  <Step title="Webhook Receives Confirmation">
+    When payment status is `'approved'`, webhook triggers stock deduction:
+    ```php
+    foreach ($pedido->productos as $producto) {
+        $cantidad = $producto->pivot->cantidad;
+        $producto->decrement('stock', $cantidad);
+    }
+    ```
+  </Step>
+  
+  <Step title="Order Status Updated">
+    Order status changes to `estado: 'Pagado'` and `estado_pago: 'aprobado'`.
+  </Step>
+</Steps>
+
+### Stock Restoration
+
+Stock is restored when:
+- Customer cancels a **paid** order (only paid orders have deducted stock)
+- Payment is refunded or charged back
+
+```php
+if ($pedido->estado_pago === 'aprobado') {
+    foreach ($pedido->productos as $producto) {
+        $producto->increment('stock', $producto->pivot->cantidad);
+    }
+}
+```
+
+## Implementation Example
+
+### React Product Form Component
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function ProductForm({ productId = null, onSuccess }) {
+  const [formData, setFormData] = useState({
+    nombre: '',
+    precio: '',
+    stock: '',
+    categoria_id: '',
+    descripcion: '',
+    imagen: null
+  });
+  const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Load categories
+    fetch('/api/categorias')
+      .then(res => res.json())
+      .then(data => setCategorias(data));
+
+    // If editing, load product data
+    if (productId) {
+      fetch(`/api/empresa/productos/${productId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+        .then(res => res.json())
+        .then(product => {
+          setFormData({
+            nombre: product.nombre,
+            precio: product.precio,
+            stock: product.stock,
+            categoria_id: product.categoria_id,
+            descripcion: product.descripcion || '',
+            imagen: null // Don't load existing image
+          });
+        });
+    }
+  }, [productId]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const data = new FormData();
+    Object.keys(formData).forEach(key => {
+      if (formData[key] !== null) {
+        data.append(key, formData[key]);
+      }
+    });
+
+    const url = productId 
+      ? `/api/empresa/productos/${productId}` 
+      : '/api/empresa/productos';
+    
+    const method = productId ? 'POST' : 'POST'; // Both use POST
+    if (productId) data.append('_method', 'PUT'); // Method spoofing for update
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: data
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(result.message);
+        if (onSuccess) onSuccess(result.producto);
+      } else {
+        alert(result.message || 'Error al guardar producto');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error de conexión');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Nombre del producto"
+        value={formData.nombre}
+        onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+        required
+      />
+      
+      <input
+        type="number"
+        placeholder="Precio"
+        value={formData.precio}
+        onChange={(e) => setFormData({...formData, precio: e.target.value})}
+        required
+        min="0"
+        step="0.01"
+      />
+      
+      <input
+        type="number"
+        placeholder="Stock disponible"
+        value={formData.stock}
+        onChange={(e) => setFormData({...formData, stock: e.target.value})}
+        required
+        min="0"
+      />
+      
+      <select
+        value={formData.categoria_id}
+        onChange={(e) => setFormData({...formData, categoria_id: e.target.value})}
+        required
+      >
+        <option value="">Seleccionar categoría</option>
+        {categorias.map(cat => (
+          <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+        ))}
+      </select>
+      
+      <textarea
+        placeholder="Descripción (opcional)"
+        value={formData.descripcion}
+        onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
+      />
+      
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setFormData({...formData, imagen: e.target.files[0]})}
+      />
+      
+      <button type="submit" disabled={loading}>
+        {loading ? 'Guardando...' : (productId ? 'Actualizar' : 'Crear')} Producto
+      </button>
+    </form>
+  );
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Image Optimization" icon="image">
+    Compress images before upload. Recommended: 800x800px, under 500KB, WebP format for best performance.
+  </Card>
+  
+  <Card title="Stock Accuracy" icon="boxes-stacked">
+    Always validate stock in real-time before critical operations. Never trust frontend stock values.
+  </Card>
+  
+  <Card title="Category Management" icon="folder-tree">
+    Create categories before allowing product creation. Implement category-based filtering for better UX.
+  </Card>
+  
+  <Card title="Authorization" icon="shield-halved">
+    Always verify product ownership before update/delete operations to prevent unauthorized access.
+  </Card>
+</CardGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Shopping Cart" icon="cart-shopping" href="/features/shopping-cart">
+    Learn how customers add products to cart and manage quantities
+  </Card>
+  
+  <Card title="Ratings & Reviews" icon="star" href="/features/ratings-reviews">
+    Understand how product ratings affect featured products display
+  </Card>
+</CardGroup>

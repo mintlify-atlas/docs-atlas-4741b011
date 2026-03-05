@@ -1,0 +1,357 @@
+---
+title: 'Business Approvals'
+description: 'Manage business registration approvals and rejections'
+---
+
+## List Pending Approvals
+
+<RequestExample>
+```bash Request
+curl -X GET https://api.beanquick.com/api/admin/solicitudes \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "rol": "cliente",
+      "created_at": "2026-01-15T10:30:00.000000Z",
+      "updated_at": "2026-01-15T10:30:00.000000Z"
+    }
+  ],
+  "empresas": [
+    {
+      "id": 1,
+      "user_id": 2,
+      "nombre": "Coffee Shop",
+      "nit": "123456789",
+      "direccion": "123 Main St",
+      "telefono": "555-0100",
+      "descripcion": "Best coffee in town",
+      "logo": "logos/coffee-shop.jpg",
+      "foto_local": "stores/coffee-interior.jpg",
+      "is_open": true,
+      "logo_url": "http://api.beanquick.com/storage/logos/coffee-shop.jpg",
+      "foto_local_url": "http://api.beanquick.com/storage/stores/coffee-interior.jpg",
+      "created_at": "2026-01-10T08:00:00.000000Z",
+      "updated_at": "2026-01-10T08:00:00.000000Z"
+    }
+  ],
+  "pedidos": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "empresa_id": 1,
+      "total": 25.50,
+      "estado": "pendiente",
+      "created_at": "2026-03-05T09:00:00.000000Z",
+      "cliente": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "empresa": {
+        "id": 1,
+        "nombre": "Coffee Shop"
+      }
+    }
+  ],
+  "solicitudes": [
+    {
+      "id": 1,
+      "nombre": "New Bakery",
+      "correo": "bakery@example.com",
+      "nit": "987654321",
+      "telefono": "555-0200",
+      "direccion": "456 Oak Ave",
+      "descripcion": "Fresh baked goods daily",
+      "logo": "logos/bakery-logo.jpg",
+      "foto_local": "stores/bakery-front.jpg",
+      "estado": "pendiente",
+      "token": null,
+      "logo_url": "http://api.beanquick.com/storage/logos/bakery-logo.jpg",
+      "foto_local_url": "http://api.beanquick.com/storage/stores/bakery-front.jpg",
+      "created_at": "2026-03-04T14:30:00.000000Z",
+      "updated_at": "2026-03-04T14:30:00.000000Z"
+    }
+  ]
+}
+```
+</ResponseExample>
+
+<ResponseField name="usuarios" type="array">
+  List of all registered users (excluding business users)
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      User ID
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      User's full name
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      User's email address
+    </ResponseField>
+    <ResponseField name="rol" type="string">
+      User role: `admin` or `cliente`
+    </ResponseField>
+    <ResponseField name="created_at" type="string">
+      Creation timestamp
+    </ResponseField>
+    <ResponseField name="updated_at" type="string">
+      Last update timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="empresas" type="array">
+  List of all active businesses
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Business ID
+    </ResponseField>
+    <ResponseField name="user_id" type="integer">
+      Associated user account ID
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Business name
+    </ResponseField>
+    <ResponseField name="nit" type="string">
+      Tax identification number
+    </ResponseField>
+    <ResponseField name="direccion" type="string">
+      Business address
+    </ResponseField>
+    <ResponseField name="telefono" type="string">
+      Contact phone number
+    </ResponseField>
+    <ResponseField name="descripcion" type="string">
+      Business description
+    </ResponseField>
+    <ResponseField name="logo" type="string">
+      Logo file path
+    </ResponseField>
+    <ResponseField name="foto_local" type="string">
+      Store photo file path
+    </ResponseField>
+    <ResponseField name="is_open" type="boolean">
+      Whether the business is currently open
+    </ResponseField>
+    <ResponseField name="logo_url" type="string">
+      Full URL to logo image
+    </ResponseField>
+    <ResponseField name="foto_local_url" type="string">
+      Full URL to store photo
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="pedidos" type="array">
+  List of all orders with customer and business details
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Order ID
+    </ResponseField>
+    <ResponseField name="user_id" type="integer">
+      Customer user ID
+    </ResponseField>
+    <ResponseField name="empresa_id" type="integer">
+      Business ID
+    </ResponseField>
+    <ResponseField name="total" type="number">
+      Order total amount
+    </ResponseField>
+    <ResponseField name="estado" type="string">
+      Order status
+    </ResponseField>
+    <ResponseField name="cliente" type="object">
+      Customer information
+    </ResponseField>
+    <ResponseField name="empresa" type="object">
+      Business information
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="solicitudes" type="array">
+  List of pending business registration requests
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Request ID
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Business name
+    </ResponseField>
+    <ResponseField name="correo" type="string">
+      Business email
+    </ResponseField>
+    <ResponseField name="nit" type="string">
+      Tax identification number
+    </ResponseField>
+    <ResponseField name="telefono" type="string">
+      Contact phone
+    </ResponseField>
+    <ResponseField name="direccion" type="string">
+      Business address
+    </ResponseField>
+    <ResponseField name="descripcion" type="string">
+      Business description
+    </ResponseField>
+    <ResponseField name="logo" type="string">
+      Logo file path
+    </ResponseField>
+    <ResponseField name="foto_local" type="string">
+      Store photo file path
+    </ResponseField>
+    <ResponseField name="estado" type="string">
+      Request status: `pendiente`, `aprobado`, or `rechazado`
+    </ResponseField>
+    <ResponseField name="token" type="string">
+      Activation token (null for pending requests)
+    </ResponseField>
+    <ResponseField name="logo_url" type="string">
+      Full URL to logo image
+    </ResponseField>
+    <ResponseField name="foto_local_url" type="string">
+      Full URL to store photo
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Approve Business Request
+
+<RequestExample>
+```bash Request
+curl -X POST https://api.beanquick.com/api/admin/aprobar/1 \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response
+{
+  "message": "Solicitud aprobada y correo de activación enviado.",
+  "solicitud": {
+    "id": 1,
+    "nombre": "New Bakery",
+    "correo": "bakery@example.com",
+    "nit": "987654321",
+    "telefono": "555-0200",
+    "direccion": "456 Oak Ave",
+    "descripcion": "Fresh baked goods daily",
+    "logo": "logos/bakery-logo.jpg",
+    "foto_local": "stores/bakery-front.jpg",
+    "estado": "aprobado",
+    "token": "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstu",
+    "logo_url": "http://api.beanquick.com/storage/logos/bakery-logo.jpg",
+    "foto_local_url": "http://api.beanquick.com/storage/stores/bakery-front.jpg",
+    "created_at": "2026-03-04T14:30:00.000000Z",
+    "updated_at": "2026-03-05T10:15:00.000000Z"
+  }
+}
+```
+
+```json Email Error Response
+{
+  "message": "Solicitud aprobada pero hubo un error al enviar el correo.",
+  "error": "SMTP connection failed"
+}
+```
+</ResponseExample>
+
+<ParamField path="id" type="integer" required>
+  The ID of the business request to approve
+</ParamField>
+
+<ResponseField name="message" type="string">
+  Success or error message
+</ResponseField>
+
+<ResponseField name="solicitud" type="object">
+  Updated business request with approval details
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Request ID
+    </ResponseField>
+    <ResponseField name="estado" type="string">
+      Updated status: `aprobado`
+    </ResponseField>
+    <ResponseField name="token" type="string">
+      60-character activation token sent via email
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Note>
+  When a business request is approved, a 60-character activation token is generated and an email is sent to the business owner with a link to complete registration at `http://localhost:5173/empresa/activar/{token}`.
+</Note>
+
+---
+
+## Reject Business Request
+
+<RequestExample>
+```bash Request
+curl -X POST https://api.beanquick.com/api/admin/rechazar/1 \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "message": "Solicitud rechazada.",
+  "solicitud": {
+    "id": 1,
+    "nombre": "New Bakery",
+    "correo": "bakery@example.com",
+    "nit": "987654321",
+    "telefono": "555-0200",
+    "direccion": "456 Oak Ave",
+    "descripcion": "Fresh baked goods daily",
+    "logo": "logos/bakery-logo.jpg",
+    "foto_local": "stores/bakery-front.jpg",
+    "estado": "rechazado",
+    "token": null,
+    "logo_url": "http://api.beanquick.com/storage/logos/bakery-logo.jpg",
+    "foto_local_url": "http://api.beanquick.com/storage/stores/bakery-front.jpg",
+    "created_at": "2026-03-04T14:30:00.000000Z",
+    "updated_at": "2026-03-05T10:20:00.000000Z"
+  }
+}
+```
+</ResponseExample>
+
+<ParamField path="id" type="integer" required>
+  The ID of the business request to reject
+</ParamField>
+
+<ResponseField name="message" type="string">
+  Confirmation message
+</ResponseField>
+
+<ResponseField name="solicitud" type="object">
+  Updated business request with rejection status
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Request ID
+    </ResponseField>
+    <ResponseField name="estado" type="string">
+      Updated status: `rechazado`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Note>
+  Rejected requests will no longer appear in the pending approvals list.
+</Note>

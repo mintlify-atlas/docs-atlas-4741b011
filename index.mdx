@@ -1,97 +1,158 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "BeanQuick Documentation"
 ---
 
-## Setting up
+<div className="relative overflow-hidden bg-gradient-to-br from-[#8B4513] via-[#A0522D] to-[#5C3317] dark:from-[#5C3317] dark:via-[#8B4513] dark:to-[#A0522D] py-20">
+  <div className="max-w-6xl mx-auto px-6 lg:px-8">
+    <div className="text-center">
+      <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+        Welcome to BeanQuick
+      </h1>
+      <p className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto mb-8">
+        Connect local businesses with customers through a powerful marketplace platform for online ordering and delivery management
+      </p>
+      <div className="flex flex-wrap justify-center gap-4">
+        <a
+          href="/quickstart"
+          className="inline-flex items-center px-6 py-3 rounded-lg bg-white text-[#8B4513] font-semibold hover:bg-gray-100 transition-colors no-underline"
+        >
+          Get Started
+        </a>
+        <a
+          href="/api/authentication"
+          className="inline-flex items-center px-6 py-3 rounded-lg border-2 border-white/30 bg-white/10 text-white font-semibold hover:bg-white/20 transition-colors no-underline"
+        >
+          Explore API
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 
-Get your documentation site up and running in minutes.
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Quick Start</h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Get up and running with BeanQuick in minutes
+  </p>
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+  <Steps>
+    <Step title="Set up your environment">
+      Clone the repository and install dependencies for both backend and frontend.
 
-## Make it yours
+      ```bash
+      git clone https://github.com/SeboskiHub/bean-quick.git
+      cd bean-quick
+      ```
+    </Step>
 
-Design a docs site that looks great and empowers your users.
+    <Step title="Configure the backend">
+      Set up your Laravel backend with database and environment variables.
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+      ```bash
+      cd back-end
+      composer install
+      cp .env.example .env
+      php artisan key:generate
+      php artisan migrate
+      ```
+    </Step>
 
-## Create beautiful pages
+    <Step title="Launch the application">
+      Start both the API server and the React frontend.
 
-Everything you need to create world-class documentation.
+      ```bash
+      # In back-end directory
+      php artisan serve
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+      # In a new terminal, from front-end directory
+      cd front-end
+      npm install
+      npm run dev
+      ```
+    </Step>
+  </Steps>
+</div>
 
-## Need inspiration?
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Explore by Role</h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Find the documentation that matches your use case
+  </p>
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+  <CardGroup cols={3}>
+    <Card title="Customer Guide" icon="shopping-cart" href="/guides/customer-guide">
+      Browse businesses, manage your cart, place orders, and leave reviews
+    </Card>
+    <Card title="Business Guide" icon="store" href="/guides/business-guide">
+      Manage your products, track orders, and grow your business
+    </Card>
+    <Card title="Admin Guide" icon="shield" href="/guides/admin-guide">
+      Approve businesses, manage users, and oversee platform operations
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Key Features</h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Everything you need to run a successful marketplace
+  </p>
+
+  <CardGroup cols={2}>
+    <Card title="Business Registration" icon="building" href="/features/business-registration">
+      Multi-step registration with admin approval workflow
+    </Card>
+    <Card title="Product Management" icon="box" href="/features/product-management">
+      Full CRUD operations for managing business inventory
+    </Card>
+    <Card title="Shopping Cart" icon="cart-shopping" href="/features/shopping-cart">
+      Session-based cart with real-time updates
+    </Card>
+    <Card title="Order Management" icon="clipboard-list" href="/features/order-management">
+      Track orders from placement to delivery
+    </Card>
+    <Card title="Payment Integration" icon="credit-card" href="/features/payments">
+      Secure payments powered by Mercado Pago
+    </Card>
+    <Card title="Ratings & Reviews" icon="star" href="/features/ratings-reviews">
+      Build trust with customer feedback
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">API Reference</h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Explore the complete API documentation
+  </p>
+
+  <CardGroup cols={2}>
+    <Card title="Authentication" icon="lock" href="/api/authentication">
+      User login, registration, and session management
+    </Card>
+    <Card title="Customer API" icon="user" href="/api/customer/cart">
+      Shopping cart, orders, and reviews endpoints
+    </Card>
+    <Card title="Business API" icon="briefcase" href="/api/business/products">
+      Product management, orders, and analytics
+    </Card>
+    <Card title="Admin API" icon="user-shield" href="/api/admin/approvals">
+      Business approvals, user management, and platform admin
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-20 mb-16 max-w-5xl mx-auto px-6">
+  <div className="rounded-2xl bg-gradient-to-r from-[#8B4513] to-[#A0522D] dark:from-[#5C3317] dark:to-[#8B4513] p-8 lg:p-12 text-center border border-gray-200 dark:border-[#27272a]">
+    <h2 className="text-3xl font-bold text-white mb-4">Ready to get started?</h2>
+    <p className="text-lg text-white/90 mb-6 max-w-2xl mx-auto">
+      Follow our quickstart guide to set up BeanQuick and start building your marketplace
+    </p>
+    <a
+      href="/quickstart"
+      className="inline-flex items-center px-6 py-3 rounded-lg bg-white text-[#8B4513] font-semibold hover:bg-gray-100 transition-colors no-underline"
+    >
+      Get Started Now
+    </a>
+  </div>
+</div>

@@ -1,0 +1,768 @@
+---
+title: 'Admin Guide'
+description: 'Complete guide for BeanQuick platform administrators - approve businesses, manage users, oversee platform operations'
+icon: 'shield-halved'
+---
+
+## Administrator Overview
+
+As a BeanQuick administrator, you have full control over the platform. You're responsible for approving new businesses, managing users, and maintaining the product category system. This guide covers all administrative functions.
+
+---
+
+## Admin Dashboard
+
+After logging in as an administrator, you'll see the Admin Dashboard (`/admin/dashboard`) with three main management modules:
+
+<CardGroup cols={3}>
+  <Card title="Solicitudes de Registro" icon="user-check" color="#e67e22">
+    Review and approve pending business registration applications.
+  </Card>
+  
+  <Card title="Gestión de Empresas" icon="store" color="#2980b9">
+    Manage all active businesses on the platform - edit details or suspend accounts.
+  </Card>
+  
+  <Card title="Usuarios del Sistema" icon="users-cog" color="#8e44ad">
+    Control customer accounts and user roles across the platform.
+  </Card>
+</CardGroup>
+
+### Dashboard Layout
+
+The dashboard header displays:
+
+- **Title**: "Panel de Administración Global"
+- **Session info**: Your admin username and "Control Total" designation
+- **Logout button**: Sign out securely when done
+
+<Info>
+  All administrative actions are logged for security and audit purposes. Always use admin privileges responsibly.
+</Info>
+
+---
+
+## Business Registration Management
+
+### Accessing Pending Applications
+
+Click "Solicitudes de Registro" on the dashboard or navigate to `/admin/solicitudes`.
+
+**What you'll see:**
+
+<CardGroup cols={2}>
+  <Card title="Application List" icon="list">
+    Table showing all pending business registration requests with:
+    - Business name
+    - Registered email
+    - NIT (tax identification)
+    - Action buttons
+  </Card>
+  
+  <Card title="Quick Actions" icon="bolt">
+    Each application has three buttons:
+    - **Ver todo/Cerrar**: View detailed information
+    - **✓ (Green)**: Approve application
+    - **✕ (Red)**: Reject application
+  </Card>
+</CardGroup>
+
+### Reviewing Applications
+
+<Steps>
+  <Step title="View Basic Information">
+    The main table displays core details at a glance:
+    
+    - **Empresa**: Business name
+    - **Correo**: Email address for the business account
+    - **NIT**: Tax identification number
+  </Step>
+  
+  <Step title="Expand Full Details">
+    Click "Ver todo" to expand the application and see:
+    
+    **Business Information:**
+    - Phone number
+    - Physical address
+    - Business description
+    
+    **Uploaded Images:**
+    - Business logo (shown on customer-facing store cards)
+    - Store photo (banner image for the store page)
+  </Step>
+  
+  <Step title="Verify Information">
+    Review all provided details:
+    
+    <Accordion title="Information to Verify" icon="clipboard-check">
+      - Business name seems legitimate and professional
+      - Valid email address format
+      - NIT appears valid for your jurisdiction
+      - Phone number is complete and formatted correctly
+      - Address is specific and complete
+      - Logo and photos are appropriate (no offensive content)
+      - Description is professional and clear
+    </Accordion>
+  </Step>
+  
+  <Step title="Make Decision">
+    Based on your review:
+    - Click **green checkmark** to approve
+    - Click **red X** to reject
+  </Step>
+</Steps>
+
+### Approving Applications
+
+When you approve a business:
+
+<Steps>
+  <Step title="Click Approve Button">
+    Click the green checkmark button for the application.
+  </Step>
+  
+  <Step title="Confirm Approval">
+    A confirmation dialog appears: "¿Aprobar esta empresa? Se enviará el correo de activación."
+    
+    Click "OK" to proceed.
+  </Step>
+  
+  <Step title="Automated Actions">
+    The system automatically:
+    
+    - Creates an active business account
+    - Sends activation email to the registered email address
+    - Removes application from pending list
+    - Displays success message
+    
+    The business owner receives an email with an activation link they must click before their first login.
+  </Step>
+</Steps>
+
+<Info>
+  Once approved, the business appears in the "Gestión de Empresas" section and their store becomes visible to customers (when they set it to "open").
+</Info>
+
+### Rejecting Applications
+
+If an application doesn't meet standards:
+
+<Steps>
+  <Step title="Click Reject Button">
+    Click the red X button for the application.
+  </Step>
+  
+  <Step title="Confirm Rejection">
+    Dialog asks: "¿Estás seguro de rechazar esta solicitud?"
+    
+    Click "OK" to proceed.
+  </Step>
+  
+  <Step title="Application Removed">
+    - Application is permanently removed from the system
+    - Success message: "Solicitud rechazada correctamente"
+    - Business owner is NOT notified (application simply disappears)
+  </Step>
+</Steps>
+
+<Warning>
+  **Common reasons for rejection:**
+  - Incomplete or suspicious information
+  - Inappropriate business name or imagery
+  - Duplicate registration attempts
+  - Business type doesn't fit platform (not a coffee/food establishment)
+  - Invalid contact information
+</Warning>
+
+### Best Practices for Application Review
+
+<AccordionGroup>
+  <Accordion title="Verification Standards" icon="check-double">
+    Maintain consistent approval criteria:
+    
+    - All required fields must be completed
+    - Contact information should be verifiable
+    - Images must be professional quality
+    - Business description should be clear and appropriate
+    - No obvious signs of spam or fraud
+  </Accordion>
+  
+  <Accordion title="Processing Time" icon="clock">
+    Aim to review applications within:
+    
+    - **24 hours**: For standard applications
+    - **Same day**: If possible during business hours
+    - **Priority review**: For businesses with complete, high-quality applications
+    
+    Prompt approval improves platform reputation and business satisfaction.
+  </Accordion>
+  
+  <Accordion title="Image Quality Check" icon="image">
+    Evaluate uploaded images:
+    
+    - Logo should be clear and readable when scaled down
+    - Store photo should show the actual business (not stock photos)
+    - Images must be appropriate and professional
+    - Adequate resolution for display purposes
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Business Management
+
+### Viewing All Businesses
+
+Access the business directory from "Gestión de Empresas" (`/admin/empresas`).
+
+**Interface features:**
+
+<CardGroup cols={2}>
+  <Card title="Search & Filter" icon="magnifying-glass">
+    Search bar at the top allows filtering by:
+    - Business name
+    - NIT (tax ID)
+    
+    Results update in real-time as you type.
+  </Card>
+  
+  <Card title="Business Cards" icon="id-card">
+    Grid layout showing each business with:
+    - Store photo banner
+    - Business logo (overlaid on banner)
+    - Business name and NIT
+    - Contact information
+    - Action buttons
+  </Card>
+</CardGroup>
+
+### Business Card Information
+
+Each card displays:
+
+**Header Section:**
+- Store photo as background banner
+- Logo overlaid in bottom-left corner
+- Business name (bold heading)
+- NIT reference number
+
+**Contact Details:**
+- 📧 Email address (from user account)
+- 📞 Phone number
+- 📍 Physical address
+
+**Action Buttons:**
+- **Edit**: Modify business information
+- **Delete**: Remove business from platform
+
+### Editing Business Information
+
+<Steps>
+  <Step title="Open Edit Modal">
+    Click the "Editar" button with pencil icon on any business card.
+  </Step>
+  
+  <Step title="Modify Details">
+    The edit modal allows updating:
+    
+    - **Nombre Comercial**: Business display name
+    - **NIT**: Tax identification number
+    - **Teléfono**: Contact phone number
+    - **Dirección**: Physical address
+    
+    <Info>
+      You cannot edit the business logo or store photos from this interface. Businesses must update their own images from their business dashboard.
+    </Info>
+  </Step>
+  
+  <Step title="Save Changes">
+    Click "Guardar Cambios" (Save icon) to update the business record.
+    
+    Success message: "¡Éxito! Empresa actualizada correctamente"
+  </Step>
+</Steps>
+
+### Deleting Businesses
+
+<Warning>
+  Deleting a business is permanent and irreversible. All associated data will be removed:
+  - Business account and login
+  - All products in their catalog
+  - Order history
+  - Customer reviews for their products
+  
+  Only delete businesses for serious violations or at business owner's explicit request.
+</Warning>
+
+<Steps>
+  <Step title="Click Delete Button">
+    Click the red trash icon on the business card.
+  </Step>
+  
+  <Step title="Confirm Deletion">
+    Warning dialog appears:
+    
+    "¿Eliminar [Business Name]? Se borrarán todos los productos asociados a este local."
+    
+    - Click "Sí, eliminar" to proceed
+    - Click "Cancelar" to abort
+  </Step>
+  
+  <Step title="Business Removed">
+    - Business and all related data are permanently deleted
+    - Business card disappears from grid
+    - Success message: "Eliminado - La empresa ha sido borrada"
+  </Step>
+</Steps>
+
+---
+
+## User Management
+
+### Accessing User Directory
+
+Navigate to "Usuarios del Sistema" (`/admin/usuarios`) to manage customer accounts.
+
+**Key features:**
+
+<CardGroup cols={2}>
+  <Card title="User Search" icon="search">
+    Search bar filters users by:
+    - Name
+    - Email address
+    
+    Live filtering as you type.
+  </Card>
+  
+  <Card title="User Table" icon="table">
+    Displays all users with:
+    - Avatar and name
+    - Email address
+    - Role badge (Cliente/Admin)
+    - Edit and delete actions
+  </Card>
+</CardGroup>
+
+### User Table Layout
+
+The table columns show:
+
+<Tabs>
+  <Tab title="Usuario (User)">
+    - User avatar icon
+    - Display name (bold)
+    - Email address (gray text below name)
+  </Tab>
+  
+  <Tab title="Rol (Role)">
+    Color-coded badge:
+    - **Blue badge**: "admin" role
+    - **Gray badge**: "cliente" (customer) role
+  </Tab>
+  
+  <Tab title="Acciones (Actions)">
+    Two icon buttons:
+    - **Pencil**: Edit user
+    - **Trash**: Delete user
+  </Tab>
+</Tabs>
+
+### Editing User Accounts
+
+<Steps>
+  <Step title="Open Edit Modal">
+    Click the pencil icon next to any user to open the edit modal.
+  </Step>
+  
+  <Step title="Update User Information">
+    You can modify:
+    
+    - **Nombre**: User's display name
+    - **Email**: Login email address
+    - **Rol**: Change between:
+      - `cliente`: Standard customer account
+      - `admin`: Administrator account (use carefully!)
+    - **Nueva Contraseña**: Reset user's password (optional)
+  </Step>
+  
+  <Step title="Save Changes">
+    Click "Guardar Cambios" to update the user account.
+    
+    Success message: "Actualizado - Usuario modificado con éxito"
+    
+    Click "Cancelar" to close without saving.
+  </Step>
+</Steps>
+
+<Warning>
+  **Role Assignment Caution:**
+  
+  Only grant "admin" role to trusted users. Administrators have full platform access including:
+  - Approving/rejecting businesses
+  - Deleting any user or business
+  - Managing product categories
+  - Viewing all data
+  
+  Use admin privileges sparingly and only for staff members.
+</Warning>
+
+### Password Resets
+
+If a user forgets their password:
+
+1. Edit the user account
+2. Enter a new temporary password in "Nueva Contraseña" field
+3. Save changes
+4. Communicate the temporary password to the user securely
+5. Instruct them to change it immediately after logging in
+
+<Tip>
+  For security, always generate strong temporary passwords and ensure users change them promptly.
+</Tip>
+
+### Deleting User Accounts
+
+<Steps>
+  <Step title="Click Delete Button">
+    Click the trash icon next to the user you want to remove.
+  </Step>
+  
+  <Step title="Confirm Deletion">
+    Alert appears: "¿Eliminar a [User Name]? Esta acción no se puede deshacer"
+    
+    - Click "Sí, eliminar" to permanently delete
+    - Click "Cancelar" to abort
+  </Step>
+  
+  <Step title="Account Removed">
+    - User account is permanently deleted
+    - User disappears from table
+    - Success message: "Eliminado - El usuario ha sido borrado"
+  </Step>
+</Steps>
+
+<Warning>
+  Deleting a customer account:
+  - Removes their login access
+  - Deletes their order history
+  - Removes their product reviews
+  - Cannot be undone
+  
+  Only delete accounts for policy violations or explicit user requests.
+</Warning>
+
+---
+
+## Category Management
+
+### Understanding Categories
+
+Product categories help organize items across all businesses:
+
+- Categories are **platform-wide** (not business-specific)
+- Businesses assign products to existing categories
+- Customers filter products by category when browsing
+- Common categories: Café, Postre, Bebida, Snack, etc.
+
+### Creating New Categories
+
+On the Admin Dashboard, scroll down to the "Crear nueva categoría de productos" section.
+
+<Steps>
+  <Step title="Enter Category Name">
+    Type the category name in the input field (e.g., "Smoothies", "Pasteles", "Té").
+  </Step>
+  
+  <Step title="Create Category">
+    Click "Crear categoría" button.
+    
+    The system:
+    - Validates the name
+    - Creates the category
+    - Shows success message: "Categoría creada correctamente"
+    - Adds it to the category list below
+  </Step>
+</Steps>
+
+### Viewing Existing Categories
+
+Below the creation form, the "Categorías existentes" section displays all current categories:
+
+- Category name
+- Delete button (trash icon)
+
+### Deleting Categories
+
+<Warning>
+  Only delete categories that are truly unnecessary. Deleting a category may affect products across all businesses that use it.
+</Warning>
+
+<Steps>
+  <Step title="Click Delete Icon">
+    Click the red trash icon next to the category you want to remove.
+  </Step>
+  
+  <Step title="Confirm Deletion">
+    Dialog asks: "¿Estás seguro de que deseas eliminar esta categoría?"
+    
+    Click "OK" to proceed.
+  </Step>
+  
+  <Step title="Category Removed">
+    - Category is deleted from the system
+    - Success message: "Categoría eliminada correctamente"
+    - Category disappears from list
+  </Step>
+</Steps>
+
+<Info>
+  **Best Practice:** Before deleting a category, check with businesses to ensure no products are actively using it. Coordinate category cleanup with business owners when possible.
+</Info>
+
+---
+
+## Administrative Best Practices
+
+### Security Guidelines
+
+<CardGroup cols={2}>
+  <Card title="Account Security" icon="lock">
+    - Use strong, unique admin password
+    - Never share admin credentials
+    - Log out when leaving your workstation
+    - Change password regularly
+  </Card>
+  
+  <Card title="Access Control" icon="user-shield">
+    - Limit admin role to essential personnel only
+    - Review admin user list periodically
+    - Remove admin access when no longer needed
+    - Document who has admin privileges
+  </Card>
+  
+  <Card title="Action Logging" icon="clipboard-list">
+    - All admin actions are logged
+    - Be prepared to justify deletions
+    - Document reasons for rejections
+    - Maintain records of significant changes
+  </Card>
+  
+  <Card title="Data Protection" icon="shield">
+    - Treat all user data as confidential
+    - Only access data when necessary
+    - Never share business or customer information
+    - Follow data protection regulations
+  </Card>
+</CardGroup>
+
+### Quality Standards
+
+<AccordionGroup>
+  <Accordion title="Business Approval Criteria" icon="building">
+    Consistent standards ensure platform quality:
+    
+    - **Professional presentation**: Business information is complete and professional
+    - **Appropriate content**: No offensive or inappropriate material
+    - **Legitimate business**: Appears to be genuine food/beverage establishment
+    - **Verifiable information**: Contact details seem legitimate
+    - **Quality imagery**: Logo and photos meet minimum quality standards
+  </Accordion>
+  
+  <Accordion title="User Management Standards" icon="users">
+    Maintain fair and consistent user policies:
+    
+    - **Clear violations only**: Only take action for actual policy violations
+    - **Warning first**: Consider warnings before account deletion when appropriate
+    - **Document decisions**: Keep records of why accounts were removed
+    - **Consistent enforcement**: Apply rules equally to all users
+  </Accordion>
+  
+  <Accordion title="Category Organization" icon="folder-tree">
+    Keep categories organized and useful:
+    
+    - **Clear naming**: Use simple, descriptive category names
+    - **Avoid duplicates**: Don't create similar categories (e.g., "Coffee" and "Café")
+    - **Appropriate scope**: Categories should apply to multiple businesses
+    - **Regular review**: Periodically audit and clean up unused categories
+  </Accordion>
+</AccordionGroup>
+
+### Communication Guidelines
+
+<Tabs>
+  <Tab title="With Businesses">
+    When communicating with business owners:
+    
+    - Be professional and courteous
+    - Explain reasons for rejections or deletions
+    - Provide guidance on meeting standards
+    - Respond to inquiries promptly
+    - Help businesses succeed on the platform
+  </Tab>
+  
+  <Tab title="With Customers">
+    When assisting customers:
+    
+    - Listen to concerns and complaints
+    - Investigate issues thoroughly
+    - Take appropriate action when warranted
+    - Protect user privacy
+    - Follow up on resolutions
+  </Tab>
+  
+  <Tab title="Documentation">
+    Maintain clear records:
+    
+    - Log significant administrative decisions
+    - Document policy violations
+    - Keep track of support inquiries
+    - Note any platform issues discovered
+    - Record changes to categories or policies
+  </Tab>
+</Tabs>
+
+---
+
+## Troubleshooting Admin Issues
+
+<AccordionGroup>
+  <Accordion title="Can't Access Admin Dashboard" icon="circle-exclamation">
+    **Symptoms:** Redirected to login or see "unauthorized" error
+    
+    **Solutions:**
+    - Verify your account has "admin" role (not "cliente")
+    - Log out completely and log back in
+    - Clear browser cache and cookies
+    - Check with another admin to verify account status
+  </Accordion>
+  
+  <Accordion title="Business Approval Email Not Sending" icon="circle-exclamation">
+    **Symptoms:** Business approved but owner doesn't receive activation email
+    
+    **Solutions:**
+    - Verify email address in application is correct
+    - Ask business to check spam/junk folder
+    - Check server email configuration (technical issue)
+    - Manual workaround: Edit user account and reset their password
+  </Accordion>
+  
+  <Accordion title="Can't Delete Business or User" icon="circle-exclamation">
+    **Symptoms:** Error when trying to delete accounts
+    
+    **Solutions:**
+    - Check for active orders associated with the account
+    - Verify you have proper admin permissions
+    - Try refreshing the page and attempting again
+    - Check browser console for error messages
+  </Accordion>
+  
+  <Accordion title="Category List Not Loading" icon="circle-exclamation">
+    **Symptoms:** "Categorías existentes" section shows loading or empty
+    
+    **Solutions:**
+    - Refresh the dashboard page
+    - Check internet connection
+    - Try creating a test category to trigger reload
+    - Contact technical support if persists
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Platform Monitoring
+
+### Daily Administrative Tasks
+
+<Steps>
+  <Step title="Review Pending Applications">
+    Check "Solicitudes de Registro" daily:
+    
+    - Process all pending business applications
+    - Aim for same-day review when possible
+    - Maintain approval quality standards
+  </Step>
+  
+  <Step title="Monitor User Activity">
+    Periodically review:
+    
+    - New user registrations
+    - Any unusual account activity
+    - Support inquiries or complaints
+  </Step>
+  
+  <Step title="Check Business Health">
+    Ensure businesses are active:
+    
+    - Note businesses with repeated issues
+    - Identify inactive accounts
+    - Follow up on suspended businesses
+  </Step>
+</Steps>
+
+### Weekly Administrative Tasks
+
+- Review and clean up unused categories
+- Audit admin user list for unauthorized access
+- Check for duplicate business registrations
+- Review any reported platform issues
+
+### Monthly Administrative Tasks
+
+- Generate platform statistics report
+- Review overall business approval/rejection rates
+- Assess category usage and organization
+- Update administrative procedures if needed
+
+---
+
+## Emergency Procedures
+
+<Warning>
+  In case of serious incidents, follow these emergency procedures.
+</Warning>
+
+### Suspected Fraudulent Business
+
+1. **Immediately suspend** (delete) the business account
+2. **Document evidence** of fraudulent activity
+3. **Notify other admins** of the situation
+4. **Review related accounts** for connected fraud
+5. **Contact authorities** if criminal activity suspected
+
+### Data Breach or Security Incident
+
+1. **Change admin passwords immediately**
+2. **Review recent admin activity logs**
+3. **Notify technical team** for system audit
+4. **Document incident details**
+5. **Follow company security protocols**
+
+### Platform Abuse
+
+1. **Identify the abusive account(s)**
+2. **Gather evidence** of policy violations
+3. **Delete offending accounts** with documentation
+4. **Block IP addresses** if necessary (technical team)
+5. **Update policies** if gaps identified
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Customer Guide" icon="user" href="/guides/customer-guide">
+    Understand the customer experience to better support users
+  </Card>
+  
+  <Card title="Business Guide" icon="store" href="/guides/business-guide">
+    Learn business workflows to assist with their questions
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/authentication">
+    Technical documentation for system integrations
+  </Card>
+  
+  <Card title="User Roles" icon="life-ring" href="/concepts/user-roles">
+    Learn about the different user roles and permissions
+  </Card>
+</CardGroup>

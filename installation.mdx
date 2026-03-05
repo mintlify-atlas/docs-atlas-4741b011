@@ -1,0 +1,751 @@
+---
+title: Installation
+description: Comprehensive installation guide for BeanQuick backend and frontend
+---
+
+## Installation Guide
+
+This guide covers detailed installation steps for BeanQuick, including production deployment considerations, environment configuration, and troubleshooting.
+
+<Note>
+  Looking for a quick setup? Check out the [Quickstart Guide](/quickstart) for rapid local development setup.
+</Note>
+
+## System Requirements
+
+Before installing BeanQuick, ensure your system meets these requirements:
+
+### Backend Requirements
+
+<CardGroup cols={2}>
+  <Card title="PHP" icon="php" iconType="duotone">
+    **Version 8.2 or higher**
+    
+    Required extensions:
+    - OpenSSL
+    - PDO
+    - Mbstring
+    - Tokenizer
+    - XML
+    - Ctype
+    - JSON
+    - BCMath
+    - Fileinfo
+    - GD or Imagick
+  </Card>
+  
+  <Card title="Composer" icon="box" iconType="solid">
+    **Version 2.0 or higher**
+    
+    Dependency manager for PHP
+  </Card>
+  
+  <Card title="Database" icon="database" iconType="solid">
+    **MySQL 8.0+ or MariaDB 10.3+**
+    
+    For data persistence
+  </Card>
+  
+  <Card title="Web Server" icon="server" iconType="solid">
+    **Apache 2.4+ or Nginx 1.18+**
+    
+    For production deployment
+  </Card>
+</CardGroup>
+
+### Frontend Requirements
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node" iconType="duotone">
+    **Version 16.0 or higher**
+    
+    JavaScript runtime
+  </Card>
+  
+  <Card title="npm" icon="npm" iconType="duotone">
+    **Version 7.0 or higher**
+    
+    Package manager (included with Node.js)
+  </Card>
+</CardGroup>
+
+## Installation Steps
+
+### Step 1: Clone the Repository
+
+Clone BeanQuick from your repository:
+
+```bash
+git clone <repository-url> BeanQuick
+cd BeanQuick
+```
+
+<Tip>
+  The repository contains both `back-end` and `front-end` directories. You'll configure each separately.
+</Tip>
+
+### Step 2: Backend Installation
+
+#### Install PHP Dependencies
+
+Navigate to the backend directory and install Composer dependencies:
+
+```bash
+cd back-end
+composer install --optimize-autoloader --no-dev
+```
+
+<Info>
+  For development environments, omit the `--no-dev` flag to include development dependencies like PHPUnit and Laravel Pint.
+</Info>
+
+#### Environment Configuration
+
+Create your environment file from the example:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your configuration:
+
+<CodeGroup>
+```bash Application Settings
+# Application
+APP_NAME="BeanQuick"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL=https://yourdomain.com
+
+# Locale
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+```
+
+```bash Database Configuration
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=back_end
+DB_USERNAME=your_username
+DB_PASSWORD=your_secure_password
+```
+
+```bash Session & Cache
+# Session
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+
+# Cache
+CACHE_STORE=database
+
+# Queue
+QUEUE_CONNECTION=database
+```
+
+```bash Email Configuration
+# Mail (for business activation emails)
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_username
+MAIL_PASSWORD=your_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@beanquick.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+</CodeGroup>
+
+<Warning>
+  **Important**: Never commit your `.env` file to version control. It contains sensitive credentials.
+</Warning>
+
+#### Generate Application Key
+
+Generate a unique application key for encryption:
+
+```bash
+php artisan key:generate
+```
+
+This updates the `APP_KEY` in your `.env` file.
+
+#### Database Setup
+
+Create the database:
+
+```bash
+# Using MySQL CLI
+mysql -u root -p
+```
+
+```sql
+CREATE DATABASE back_end CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+EXIT;
+```
+
+Run migrations to create all tables:
+
+```bash
+php artisan migrate --force
+```
+
+<Accordion title="Database Schema Overview">
+  BeanQuick creates the following tables:
+  
+  - `users` - User accounts (customers, businesses, admins)
+  - `empresas` - Business profiles and information
+  - `productos` - Product catalog
+  - `categorias` - Product categories
+  - `carritos` - Shopping carts
+  - `carrito_productos` - Cart items
+  - `pedidos` - Customer orders
+  - `pedido_productos` - Order items
+  - `calificaciones` - Product reviews and ratings
+  - `solicitud_empresas` - Business registration requests
+  - `jobs` - Queue jobs
+  - `cache` - Cache entries
+</Accordion>
+
+#### Storage Configuration
+
+Create the symbolic link for public file access:
+
+```bash
+php artisan storage:link
+```
+
+Set proper permissions:
+
+```bash
+chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+```
+
+<Info>
+  Replace `www-data` with your web server user (e.g., `nginx` for Nginx).
+</Info>
+
+### Step 3: Frontend Installation
+
+Navigate to the frontend directory:
+
+```bash
+cd ../front-end
+```
+
+#### Install Node Dependencies
+
+```bash
+npm install
+```
+
+#### Configure API Endpoint
+
+Update the API base URL in your React components. Open `src/App.jsx` and update the axios base URL:
+
+```jsx src/App.jsx
+// Find and update API calls from:
+http://127.0.0.1:8000/api
+
+// To your production URL:
+https://api.yourdomain.com/api
+```
+
+<Tip>
+  **Better Approach**: Create an environment variable in `front-end/.env`:
+  
+  ```bash .env
+  VITE_API_URL=https://api.yourdomain.com
+  ```
+  
+  Then use `import.meta.env.VITE_API_URL` in your components.
+</Tip>
+
+#### Build for Production
+
+Compile and optimize the frontend:
+
+```bash
+npm run build
+```
+
+This creates a `dist` directory with optimized static files ready for deployment.
+
+## Mercado Pago Configuration
+
+BeanQuick uses Mercado Pago for payment processing. Configure your credentials:
+
+<Steps>
+  <Step title="Create Mercado Pago Account">
+    Sign up at [Mercado Pago Developers](https://www.mercadopago.com/developers)
+  </Step>
+
+  <Step title="Get API Credentials">
+    Navigate to your application and copy:
+    - Access Token
+    - Public Key
+  </Step>
+
+  <Step title="Add to Environment">
+    Update `back-end/.env`:
+    
+    ```bash .env
+    MERCADOPAGO_ACCESS_TOKEN=your_access_token_here
+    MERCADOPAGO_PUBLIC_KEY=your_public_key_here
+    ```
+  </Step>
+
+  <Step title="Configure Webhook">
+    Set up the webhook URL in Mercado Pago dashboard:
+    
+    ```plaintext
+    https://yourdomain.com/api/webhook/mercadopago
+    ```
+    
+    This endpoint handles payment notifications.
+  </Step>
+</Steps>
+
+<Warning>
+  Use **sandbox credentials** for testing and **production credentials** only when going live.
+</Warning>
+
+## Web Server Configuration
+
+### Apache Configuration
+
+Create a virtual host for the backend:
+
+```apache /etc/apache2/sites-available/beanquick-api.conf
+<VirtualHost *:80>
+    ServerName api.yourdomain.com
+    DocumentRoot /var/www/beanquick/back-end/public
+
+    <Directory /var/www/beanquick/back-end/public>
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/beanquick-error.log
+    CustomLog ${APACHE_LOG_DIR}/beanquick-access.log combined
+</VirtualHost>
+```
+
+Enable the site and required modules:
+
+```bash
+sudo a2enmod rewrite
+sudo a2ensite beanquick-api.conf
+sudo systemctl reload apache2
+```
+
+### Nginx Configuration
+
+Create a server block for the backend:
+
+```nginx /etc/nginx/sites-available/beanquick-api
+server {
+    listen 80;
+    server_name api.yourdomain.com;
+    root /var/www/beanquick/back-end/public;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+
+    index index.php;
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+Enable the site:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/beanquick-api /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### Frontend Deployment
+
+For the React frontend, serve the built files:
+
+```nginx /etc/nginx/sites-available/beanquick-frontend
+server {
+    listen 80;
+    server_name yourdomain.com;
+    root /var/www/beanquick/front-end/dist;
+
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+## SSL Configuration
+
+Secure your application with Let's Encrypt:
+
+```bash
+# Install Certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Obtain SSL certificates
+sudo certbot --nginx -d yourdomain.com -d api.yourdomain.com
+
+# Auto-renewal is configured automatically
+sudo certbot renew --dry-run
+```
+
+## Queue Worker Setup
+
+BeanQuick uses queues for background processing (emails, notifications).
+
+### Using Supervisor (Recommended)
+
+Install Supervisor:
+
+```bash
+sudo apt install supervisor
+```
+
+Create a configuration file:
+
+```ini /etc/supervisor/conf.d/beanquick-worker.conf
+[program:beanquick-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/beanquick/back-end/artisan queue:work database --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/www/beanquick/back-end/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+Start the worker:
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start beanquick-worker:*
+```
+
+## Scheduled Tasks
+
+BeanQuick may need to run scheduled tasks. Add to crontab:
+
+```bash
+crontab -e
+```
+
+Add the Laravel scheduler:
+
+```cron
+* * * * * cd /var/www/beanquick/back-end && php artisan schedule:run >> /dev/null 2>&1
+```
+
+## Production Optimization
+
+### Cache Configuration
+
+```bash
+cd back-end
+
+# Cache configuration
+php artisan config:cache
+
+# Cache routes
+php artisan route:cache
+
+# Cache views
+php artisan view:cache
+```
+
+<Warning>
+  After changing `.env` or config files, clear the cache:
+  ```bash
+  php artisan config:clear
+  php artisan route:clear
+  php artisan view:clear
+  ```
+</Warning>
+
+### Optimize Composer Autoloader
+
+```bash
+composer install --optimize-autoloader --no-dev
+composer dump-autoload --optimize
+```
+
+## Security Checklist
+
+<AccordionGroup>
+  <Accordion title="Environment Security" icon="shield">
+    - [ ] Set `APP_DEBUG=false` in production
+    - [ ] Set `APP_ENV=production`
+    - [ ] Use strong, unique `APP_KEY`
+    - [ ] Never commit `.env` to version control
+    - [ ] Restrict `.env` file permissions: `chmod 600 .env`
+  </Accordion>
+
+  <Accordion title="Database Security" icon="database">
+    - [ ] Use strong database passwords
+    - [ ] Create dedicated database user with limited privileges
+    - [ ] Enable SSL for database connections if remote
+    - [ ] Regular database backups
+    - [ ] Keep database software updated
+  </Accordion>
+
+  <Accordion title="Server Security" icon="server">
+    - [ ] Use HTTPS/SSL for all connections
+    - [ ] Configure firewall (UFW, iptables)
+    - [ ] Disable directory listing
+    - [ ] Keep PHP and web server updated
+    - [ ] Set proper file permissions
+    - [ ] Configure fail2ban for brute force protection
+  </Accordion>
+
+  <Accordion title="Application Security" icon="code">
+    - [ ] Use CSRF protection (enabled by default)
+    - [ ] Validate all user inputs
+    - [ ] Use prepared statements (Eloquent ORM)
+    - [ ] Implement rate limiting on API endpoints
+    - [ ] Regular security audits with `composer audit`
+  </Accordion>
+</AccordionGroup>
+
+## Verification
+
+Verify your installation:
+
+<Steps>
+  <Step title="Test Backend">
+    ```bash
+    curl https://api.yourdomain.com/api/productos/destacados
+    ```
+    
+    Should return JSON response with featured products.
+  </Step>
+
+  <Step title="Test Frontend">
+    Open `https://yourdomain.com` in your browser.
+    
+    You should see the BeanQuick homepage.
+  </Step>
+
+  <Step title="Test Authentication">
+    Try registering a new user account through the frontend.
+  </Step>
+
+  <Step title="Test File Uploads">
+    Login as a business and try uploading a product image.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="500 Internal Server Error" icon="circle-exclamation">
+    Check Laravel logs:
+    
+    ```bash
+    tail -f back-end/storage/logs/laravel.log
+    ```
+    
+    Common causes:
+    - Incorrect file permissions
+    - Missing `.env` configuration
+    - Database connection issues
+    - Missing PHP extensions
+  </Accordion>
+
+  <Accordion title="CORS Issues" icon="globe">
+    If the frontend can't connect to the API:
+    
+    Install Laravel CORS package:
+    ```bash
+    composer require fruitcake/laravel-cors
+    ```
+    
+    Configure in `config/cors.php`:
+    ```php
+    'paths' => ['api/*'],
+    'allowed_origins' => ['https://yourdomain.com'],
+    ```
+  </Accordion>
+
+  <Accordion title="File Upload Errors" icon="upload">
+    Check upload limits in `php.ini`:
+    
+    ```ini
+    upload_max_filesize = 10M
+    post_max_size = 10M
+    ```
+    
+    Verify storage permissions:
+    ```bash
+    chmod -R 775 back-end/storage
+    ```
+  </Accordion>
+
+  <Accordion title="Queue Not Processing" icon="list">
+    Check supervisor status:
+    
+    ```bash
+    sudo supervisorctl status
+    ```
+    
+    View worker logs:
+    ```bash
+    tail -f back-end/storage/logs/worker.log
+    ```
+    
+    Restart workers:
+    ```bash
+    sudo supervisorctl restart beanquick-worker:*
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Backup Strategy
+
+### Database Backups
+
+```bash
+#!/bin/bash
+# backup.sh
+
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/var/backups/beanquick"
+DB_NAME="back_end"
+
+mkdir -p $BACKUP_DIR
+
+mysqldump -u root -p$DB_PASSWORD $DB_NAME | gzip > $BACKUP_DIR/db_$DATE.sql.gz
+
+# Keep only last 30 days
+find $BACKUP_DIR -name "db_*.sql.gz" -mtime +30 -delete
+```
+
+### File Backups
+
+```bash
+# Backup uploaded files
+tar -czf storage_backup_$(date +%Y%m%d).tar.gz back-end/storage/app/public
+```
+
+## Monitoring
+
+### Laravel Telescope (Development)
+
+```bash
+composer require laravel/telescope --dev
+php artisan telescope:install
+php artisan migrate
+```
+
+Access at: `https://api.yourdomain.com/telescope`
+
+### Error Tracking
+
+Consider integrating services like:
+- Sentry
+- Bugsnag  
+- Rollbar
+
+## Performance Optimization
+
+<CardGroup cols={2}>
+  <Card title="Enable OPcache" icon="gauge-high">
+    Configure in `php.ini`:
+    ```ini
+    opcache.enable=1
+    opcache.memory_consumption=256
+    opcache.interned_strings_buffer=16
+    opcache.max_accelerated_files=10000
+    ```
+  </Card>
+  
+  <Card title="Use Redis" icon="database">
+    For caching and sessions:
+    ```bash
+    composer require predis/predis
+    ```
+    
+    Update `.env`:
+    ```bash
+    CACHE_DRIVER=redis
+    SESSION_DRIVER=redis
+    ```
+  </Card>
+  
+  <Card title="CDN Integration" icon="cloud">
+    Serve static assets from a CDN for better performance globally.
+  </Card>
+  
+  <Card title="Database Optimization" icon="database">
+    - Add indexes to frequently queried columns
+    - Use eager loading to prevent N+1 queries
+    - Implement database query caching
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart Guide" icon="gear" href="/quickstart" color="#8B4513">
+    Get started with BeanQuick quickly
+  </Card>
+  
+  <Card title="API Documentation" icon="code" href="/api/authentication" color="#D2691E">
+    Explore all available API endpoints
+  </Card>
+  
+  <Card title="Business Guide" icon="palette" href="/guides/business-guide" color="#5C3317">
+    Learn how to manage your business on BeanQuick
+  </Card>
+  
+  <Card title="Customer Guide" icon="rocket" href="/guides/customer-guide" color="#8B4513">
+    Learn how to order from businesses
+  </Card>
+</CardGroup>
+
+---
+
+<Check>
+  **Congratulations!** Your BeanQuick installation is complete and production-ready.
+</Check>

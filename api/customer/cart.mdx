@@ -1,0 +1,250 @@
+---
+title: 'Cart Endpoints'
+description: 'Manage shopping cart items for authenticated customers'
+---
+
+## Get Cart Items
+
+<CodeGroup>
+```bash GET /api/cliente/carrito
+curl -X GET https://your-domain.com/api/cliente/carrito \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+</CodeGroup>
+
+Retrieves all products in the authenticated customer's cart.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Response
+
+<ResponseField name="productos" type="array">
+  Array of products in the cart
+  
+  <Expandable title="Product Object">
+    <ResponseField name="id" type="integer">
+      Product ID
+    </ResponseField>
+    
+    <ResponseField name="nombre" type="string">
+      Product name
+    </ResponseField>
+    
+    <ResponseField name="precio" type="float">
+      Product price
+    </ResponseField>
+    
+    <ResponseField name="stock" type="integer">
+      Available stock quantity
+    </ResponseField>
+    
+    <ResponseField name="empresa_id" type="integer">
+      Business/company ID that owns the product
+    </ResponseField>
+    
+    <ResponseField name="pivot" type="object">
+      <Expandable title="Pivot Data">
+        <ResponseField name="cantidad" type="integer">
+          Quantity in cart
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="empresa" type="object">
+      Business details
+      
+      <Expandable title="Empresa Object">
+        <ResponseField name="id" type="integer">
+          Business ID
+        </ResponseField>
+        
+        <ResponseField name="nombre" type="string">
+          Business name
+        </ResponseField>
+        
+        <ResponseField name="is_open" type="boolean">
+          Whether the business is currently open
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Add Product to Cart
+
+<CodeGroup>
+```bash POST /api/cliente/carrito/agregar/{productoId}
+curl -X POST https://your-domain.com/api/cliente/carrito/agregar/5 \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "cantidad": 2
+  }'
+```
+</CodeGroup>
+
+Adds a product to the cart or increases quantity if already present.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="productoId" type="integer" required>
+  ID of the product to add
+</ParamField>
+
+### Body Parameters
+
+<ParamField body="cantidad" type="integer" required>
+  Quantity to add (minimum: 1)
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="productos" type="array">
+  Updated cart products array
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="error" type="string">
+  Error message when:
+  - Business is closed (403)
+  - Insufficient stock (422)
+</ResponseField>
+
+---
+
+## Update Cart Item Quantity
+
+<CodeGroup>
+```bash PUT /api/cliente/carrito/actualizar/{productoId}
+curl -X PUT https://your-domain.com/api/cliente/carrito/actualizar/5 \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "cantidad": 3
+  }'
+```
+</CodeGroup>
+
+Updates the quantity of a product already in the cart.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="productoId" type="integer" required>
+  ID of the product to update
+</ParamField>
+
+### Body Parameters
+
+<ParamField body="cantidad" type="integer" required>
+  New quantity (minimum: 1)
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message: "Cantidad actualizada."
+</ResponseField>
+
+<ResponseField name="productos" type="array">
+  Updated cart products array
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="error" type="string">
+  Error message when:
+  - Business is closed (403)
+  - Insufficient stock (422)
+</ResponseField>
+
+---
+
+## Remove Product from Cart
+
+<CodeGroup>
+```bash DELETE /api/cliente/carrito/eliminar/{productoId}
+curl -X DELETE https://your-domain.com/api/cliente/carrito/eliminar/5 \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+</CodeGroup>
+
+Removes a specific product from the cart.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="productoId" type="integer" required>
+  ID of the product to remove
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message: "Eliminado."
+</ResponseField>
+
+<ResponseField name="productos" type="array">
+  Updated cart products array
+</ResponseField>
+
+---
+
+## Empty Cart
+
+<CodeGroup>
+```bash POST /api/cliente/carrito/vaciar
+curl -X POST https://your-domain.com/api/cliente/carrito/vaciar \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json"
+```
+</CodeGroup>
+
+Removes all products from the cart.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message: "Vaciado."
+</ResponseField>
+
+<ResponseField name="productos" type="array">
+  Empty array
+</ResponseField>

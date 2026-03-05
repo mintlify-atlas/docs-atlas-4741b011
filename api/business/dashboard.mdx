@@ -1,0 +1,458 @@
+---
+title: 'Business Dashboard'
+description: 'Analytics, sales reports, and PDF generation for business insights'
+---
+
+## Get Dashboard Data
+
+<api method="GET" path="/api/empresa/dashboard" />
+
+Retrieves comprehensive analytics and metrics for the authenticated business. Supports multiple time periods.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token from authentication
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="periodo" type="string" default="semana">
+  Time period for analytics. Options:
+  - `dia` - Today's data (24 hours)
+  - `semana` - Last 7 days (default)
+  - `mes` - Current month
+  - `anio` - Current year
+</ParamField>
+
+### Response
+
+<ResponseField name="empresa" type="object">
+  Business information
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Business ID
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Business name
+    </ResponseField>
+    <ResponseField name="nit" type="string">
+      Tax identification number
+    </ResponseField>
+    <ResponseField name="direccion" type="string">
+      Business address
+    </ResponseField>
+    <ResponseField name="telefono" type="string">
+      Phone number
+    </ResponseField>
+    <ResponseField name="descripcion" type="string">
+      Business description
+    </ResponseField>
+    <ResponseField name="logo_url" type="string">
+      Logo image URL
+    </ResponseField>
+    <ResponseField name="foto_local_url" type="string">
+      Store photo URL
+    </ResponseField>
+    <ResponseField name="is_open" type="boolean">
+      Whether business is currently open
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="periodo" type="string">
+  The time period used for calculations ("dia", "semana", "mes", "anio")
+</ResponseField>
+
+<ResponseField name="stats_cards" type="object">
+  Summary statistics cards
+  <Expandable title="properties">
+    <ResponseField name="ventas_hoy" type="float">
+      Total sales for the selected period (despite the name, reflects the chosen periodo)
+    </ResponseField>
+    <ResponseField name="promedio_calificacion" type="float">
+      Average rating (0-5 stars, rounded to 1 decimal)
+    </ResponseField>
+    <ResponseField name="total_calificaciones" type="integer">
+      Total number of ratings received
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="charts" type="object">
+  Chart data for visualizations
+  <Expandable title="properties">
+    <ResponseField name="ventas_semanales" type="array">
+      Sales data points for the selected period
+      <Expandable title="array items">
+        <ResponseField name="label" type="string">
+          Time label (format varies by period: "HH:mm" for day, "dd/mm" for week/month, "Month" for year)
+        </ResponseField>
+        <ResponseField name="total" type="float">
+          Total sales for that time period
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="ventas_anuales" type="array">
+      Same data as ventas_semanales (kept for frontend compatibility)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="top_productos" type="array">
+  Top 5 best-selling products
+  <Expandable title="array items">
+    <ResponseField name="nombre" type="string">
+      Product name
+    </ResponseField>
+    <ResponseField name="ventas" type="integer">
+      Total units sold
+    </ResponseField>
+    <ResponseField name="imagen" type="string">
+      Product image URL
+    </ResponseField>
+    <ResponseField name="precio" type="float">
+      Current product price
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="ultimos_pedidos" type="array">
+  5 most recent orders
+  <Expandable title="array items">
+    <ResponseField name="id" type="integer">
+      Order ID
+    </ResponseField>
+    <ResponseField name="cliente" type="string">
+      Customer name or "Cliente Anónimo"
+    </ResponseField>
+    <ResponseField name="total" type="float">
+      Order total
+    </ResponseField>
+    <ResponseField name="estado" type="string">
+      Order status
+    </ResponseField>
+    <ResponseField name="hora" type="string">
+      Human-readable time since order (e.g., "hace 2 horas")
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Error Responses
+
+**500 Internal Server Error**
+```json
+{
+  "error": "Error en el servidor",
+  "detalle": "[error message]"
+}
+```
+
+**401 Unauthorized** - Authentication error if user has no associated business
+
+### Example Request
+
+```bash
+curl -X GET "https://api.beanquick.com/api/empresa/dashboard?periodo=mes" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json"
+```
+
+### Example Response
+
+```json
+{
+  "empresa": {
+    "id": 5,
+    "nombre": "Café Aroma",
+    "nit": "123456789",
+    "direccion": "Calle 10 #20-30, Bogotá",
+    "telefono": "+57 300 1234567",
+    "descripcion": "Cafetería artesanal especializada en café colombiano",
+    "logo_url": "https://api.beanquick.com/storage/empresas/logos/logo5.jpg",
+    "foto_local_url": "https://api.beanquick.com/storage/empresas/locales/local5.jpg",
+    "is_open": true
+  },
+  "periodo": "mes",
+  "stats_cards": {
+    "ventas_hoy": 4250.75,
+    "promedio_calificacion": 4.7,
+    "total_calificaciones": 142
+  },
+  "charts": {
+    "ventas_semanales": [
+      {"label": "01", "total": 125.50},
+      {"label": "02", "total": 210.00},
+      {"label": "03", "total": 180.25},
+      {"label": "04", "total": 0},
+      {"label": "05", "total": 305.00}
+    ],
+    "ventas_anuales": [
+      {"label": "01", "total": 125.50},
+      {"label": "02", "total": 210.00},
+      {"label": "03", "total": 180.25},
+      {"label": "04", "total": 0},
+      {"label": "05", "total": 305.00}
+    ]
+  },
+  "top_productos": [
+    {
+      "nombre": "Café Americano",
+      "ventas": 245,
+      "imagen": "https://api.beanquick.com/storage/productos/americano.jpg",
+      "precio": 15.50
+    },
+    {
+      "nombre": "Cappuccino",
+      "ventas": 198,
+      "imagen": "https://api.beanquick.com/storage/productos/cappuccino.jpg",
+      "precio": 18.00
+    }
+  ],
+  "ultimos_pedidos": [
+    {
+      "id": 156,
+      "cliente": "Carlos Ruiz",
+      "total": 42.50,
+      "estado": "Listo",
+      "hora": "hace 15 minutos"
+    },
+    {
+      "id": 155,
+      "cliente": "Ana Martínez",
+      "total": 28.00,
+      "estado": "Preparando",
+      "hora": "hace 1 hora"
+    }
+  ]
+}
+```
+
+## Download PDF Report
+
+<api method="GET" path="/api/empresa/dashboard/pdf" />
+
+Generates and downloads a PDF report with the same data structure as the dashboard endpoint.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token from authentication
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="periodo" type="string" default="semana">
+  Time period for the report. Same options as dashboard endpoint:
+  - `dia` - Today's report
+  - `semana` - Last 7 days (default)
+  - `mes` - Current month
+  - `anio` - Current year
+</ParamField>
+
+### Response
+
+Returns a PDF file with:
+- Content-Type: `application/pdf`
+- Content-Disposition: `attachment; filename="reporte-dashboard-empresa.pdf"`
+
+The PDF includes all dashboard data formatted for printing:
+- Business information header
+- Sales statistics
+- Charts and graphs
+- Top products table
+- Recent orders list
+
+### Error Responses
+
+- `401` - "No autenticado" if user is not authenticated
+- `500` - Server error during PDF generation
+
+### Example Request
+
+```bash
+curl -X GET "https://api.beanquick.com/api/empresa/dashboard/pdf?periodo=semana" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -o dashboard-report.pdf
+```
+
+### Example Request (JavaScript)
+
+```javascript
+fetch('https://api.beanquick.com/api/empresa/dashboard/pdf?periodo=semana', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN'
+  }
+})
+.then(response => response.blob())
+.then(blob => {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'reporte-dashboard-empresa.pdf';
+  a.click();
+});
+```
+
+## Get Business Ratings
+
+<api method="GET" path="/api/empresa/calificaciones" />
+
+Retrieves all ratings and reviews for products belonging to the authenticated business.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token from authentication
+</ParamField>
+
+### Response
+
+<ResponseField name="[].id" type="integer">
+  Rating ID
+</ResponseField>
+
+<ResponseField name="[].producto_id" type="integer">
+  Product ID that was rated
+</ResponseField>
+
+<ResponseField name="[].user_id" type="integer">
+  User ID who left the rating
+</ResponseField>
+
+<ResponseField name="[].estrellas" type="integer">
+  Star rating (1-5)
+</ResponseField>
+
+<ResponseField name="[].comentario" type="string">
+  Review comment text
+</ResponseField>
+
+<ResponseField name="[].created_at" type="string">
+  When the rating was created
+</ResponseField>
+
+<ResponseField name="[].updated_at" type="string">
+  When the rating was last updated
+</ResponseField>
+
+<ResponseField name="[].usuario" type="object">
+  User who left the rating
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      User ID
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      User name
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="[].producto" type="object">
+  Product that was rated
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Product ID
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Product name
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Error Responses
+
+**404 Not Found**
+```json
+{
+  "error": "No se encontró una empresa vinculada a este usuario."
+}
+```
+
+**500 Internal Server Error**
+```json
+{
+  "error": "Error interno al obtener calificaciones",
+  "detalle": "[error message]"
+}
+```
+
+### Example Request
+
+```bash
+curl -X GET https://api.beanquick.com/api/empresa/calificaciones \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json"
+```
+
+### Example Response
+
+```json
+[
+  {
+    "id": 89,
+    "producto_id": 12,
+    "user_id": 34,
+    "estrellas": 5,
+    "comentario": "Excelente café, el mejor de la zona",
+    "created_at": "2024-03-01T14:30:00.000000Z",
+    "updated_at": "2024-03-01T14:30:00.000000Z",
+    "usuario": {
+      "id": 34,
+      "name": "Laura Pérez"
+    },
+    "producto": {
+      "id": 12,
+      "nombre": "Café Americano"
+    }
+  },
+  {
+    "id": 88,
+    "producto_id": 15,
+    "user_id": 22,
+    "estrellas": 4,
+    "comentario": "Muy bueno, pero me gustaría que tuvieran más variedad",
+    "created_at": "2024-02-28T11:20:00.000000Z",
+    "updated_at": "2024-02-28T11:20:00.000000Z",
+    "usuario": {
+      "id": 22,
+      "name": "Roberto Silva"
+    },
+    "producto": {
+      "id": 15,
+      "nombre": "Croissant"
+    }
+  }
+]
+```
+
+## Dashboard Data by Period
+
+### Day (dia)
+- Chart shows 24 hourly data points (00h to 23h)
+- Sales counted from start to end of today
+- Useful for monitoring real-time daily performance
+
+### Week (semana) - Default
+- Chart shows last 7 days with labels like "01/03", "02/03"
+- Sales from 6 days ago to today
+- Best for weekly performance tracking
+
+### Month (mes)
+- Chart shows all days of current month (01 to 28/29/30/31)
+- Sales from first to last day of current month
+- Useful for monthly reporting
+
+### Year (anio)
+- Chart shows monthly data points (January, February, etc.)
+- Sales from January 1st to December 31st of current year
+- Best for annual performance analysis
+
+### Important Notes
+
+- Only orders with `estado` in ["entregado", "Entregado", "ENTREGADO"] are counted in sales
+- Ratings data is not filtered by period (shows all-time ratings)
+- Top products ranking is based on total units sold (all-time)
+- Recent orders shows the 5 most recent regardless of period
+- Chart data points with no sales show `0` instead of being omitted

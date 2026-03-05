@@ -1,0 +1,274 @@
+---
+title: 'Order Management'
+description: 'View and manage orders received by your business'
+---
+
+## List Business Orders
+
+<api method="GET" path="/api/empresa/pedidos" />
+
+Retrieves all paid orders received by the authenticated business.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token from authentication
+</ParamField>
+
+### Response
+
+<ResponseField name="[].id" type="integer">
+  Order ID
+</ResponseField>
+
+<ResponseField name="[].user_id" type="integer">
+  Customer user ID
+</ResponseField>
+
+<ResponseField name="[].empresa_id" type="integer">
+  Business ID
+</ResponseField>
+
+<ResponseField name="[].estado" type="string">
+  Order status: "Pendiente", "Preparando", "Listo", "Entregado", "Cancelado"
+</ResponseField>
+
+<ResponseField name="[].estado_pago" type="string">
+  Payment status: "pendiente", "aprobado", "rechazado"
+</ResponseField>
+
+<ResponseField name="[].hora_recogida" type="string">
+  Pickup time in HH:MM format
+</ResponseField>
+
+<ResponseField name="[].total" type="float">
+  Order total amount
+</ResponseField>
+
+<ResponseField name="[].created_at" type="string">
+  Order creation date and time
+</ResponseField>
+
+<ResponseField name="[].updated_at" type="string">
+  Last update timestamp
+</ResponseField>
+
+<ResponseField name="[].cliente" type="object">
+  Customer information
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Customer user ID
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Customer name
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="[].productos" type="array">
+  Array of products in the order
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      Product ID
+    </ResponseField>
+    <ResponseField name="nombre" type="string">
+      Product name
+    </ResponseField>
+    <ResponseField name="precio" type="float">
+      Current product price
+    </ResponseField>
+    <ResponseField name="imagen_url" type="string">
+      Product image URL
+    </ResponseField>
+    <ResponseField name="pivot" type="object">
+      Order-product relationship data
+      <Expandable title="properties">
+        <ResponseField name="cantidad" type="integer">
+          Quantity ordered
+        </ResponseField>
+        <ResponseField name="precio_unitario" type="float">
+          Price at time of order
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Filtering
+
+This endpoint only returns orders where `estado_pago = "aprobado"`. Unpaid orders are not shown to businesses.
+
+### Error Responses
+
+**404 Not Found** - User has no associated business
+```json
+{
+  "message": "No tienes empresa asociada."
+}
+```
+
+### Example Request
+
+```bash
+curl -X GET https://api.beanquick.com/api/empresa/pedidos \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json"
+```
+
+### Example Response
+
+```json
+[
+  {
+    "id": 42,
+    "user_id": 15,
+    "empresa_id": 5,
+    "estado": "Preparando",
+    "estado_pago": "aprobado",
+    "hora_recogida": "14:30",
+    "total": 85.50,
+    "created_at": "05/03/2024 10:15",
+    "updated_at": "2024-03-05T10:20:00.000000Z",
+    "cliente": {
+      "id": 15,
+      "name": "María González"
+    },
+    "productos": [
+      {
+        "id": 8,
+        "nombre": "Café Americano",
+        "precio": 15.50,
+        "imagen_url": "https://api.beanquick.com/storage/productos/americano.jpg",
+        "pivot": {
+          "pedido_id": 42,
+          "producto_id": 8,
+          "cantidad": 2,
+          "precio_unitario": 15.50
+        }
+      },
+      {
+        "id": 12,
+        "nombre": "Croissant",
+        "precio": 12.00,
+        "imagen_url": "https://api.beanquick.com/storage/productos/croissant.jpg",
+        "pivot": {
+          "pedido_id": 42,
+          "producto_id": 12,
+          "cantidad": 3,
+          "precio_unitario": 12.00
+        }
+      }
+    ]
+  }
+]
+```
+
+## Update Order Status
+
+<api method="PATCH" path="/api/empresa/pedidos/{id}/estado" />
+
+Updates the status of an order. Only works for paid orders (`estado_pago = "aprobado"`).
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token from authentication
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  application/json
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Order ID to update
+</ParamField>
+
+### Body Parameters
+
+<ParamField body="estado" type="string" required>
+  New order status. Must be one of:
+  - `Preparando` - Order is being prepared
+  - `Listo` - Order is ready for pickup
+  - `Entregado` - Order has been delivered/picked up
+  - `Cancelado` - Order was cancelled
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  "Estado actualizado con éxito"
+</ResponseField>
+
+<ResponseField name="pedido" type="object">
+  Updated order object with same structure as GET response
+</ResponseField>
+
+### Error Responses
+
+**400 Bad Request** - Cannot modify unpaid order
+```json
+{
+  "message": "No puedes modificar un pedido que no ha sido pagado."
+}
+```
+
+**404 Not Found** - Order not found
+
+**422 Unprocessable Entity** - Validation error for invalid status value
+
+**500 Internal Server Error** - Server error
+
+### Example Request
+
+```bash
+curl -X PATCH https://api.beanquick.com/api/empresa/pedidos/42/estado \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "estado": "Listo"
+  }'
+```
+
+### Example Response
+
+```json
+{
+  "message": "Estado actualizado con éxito",
+  "pedido": {
+    "id": 42,
+    "user_id": 15,
+    "empresa_id": 5,
+    "estado": "Listo",
+    "estado_pago": "aprobado",
+    "hora_recogida": "14:30",
+    "total": 85.50,
+    "created_at": "05/03/2024 10:15",
+    "updated_at": "2024-03-05T10:45:00.000000Z"
+  }
+}
+```
+
+## Order Status Workflow
+
+Orders typically follow this status progression:
+
+1. **Pendiente** - Initial state when order is created (before payment)
+2. **Preparando** - Business is preparing the order (after payment approved)
+3. **Listo** - Order is ready for customer pickup
+4. **Entregado** - Customer has picked up the order
+5. **Cancelado** - Order was cancelled (by customer or business)
+
+### Payment States
+
+- **pendiente** - Payment not yet processed
+- **aprobado** - Payment confirmed (order appears in business panel)
+- **rechazado** - Payment failed or cancelled
+
+### Important Notes
+
+- Only orders with `estado_pago = "aprobado"` can have their status modified
+- Stock is deducted when payment is approved, not when order is created
+- Cancelled orders restore stock only if they were previously paid
+- Status values are case-insensitive but stored with first letter capitalized

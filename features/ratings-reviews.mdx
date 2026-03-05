@@ -1,0 +1,695 @@
+---
+title: 'Ratings & Reviews'
+description: 'Customer reviews and ratings system with delivery validation in BeanQuick'
+icon: 'star'
+---
+
+## Overview
+
+BeanQuick implements a verified ratings and reviews system where customers can only rate products from orders they have received. This ensures all reviews are authentic and based on actual purchase experiences.
+
+## Rating Model Structure
+
+### Calificacion Model
+
+**Table:** `calificaciones`
+
+**Fillable Fields:**
+```php
+'user_id', 'pedido_id', 'producto_id', 'estrellas', 'comentario'
+```
+
+**Relationships:**
+- `usuario()` - belongsTo User
+- `producto()` - belongsTo Producto
+- `pedido()` - belongsTo Pedido
+
+**Field Specifications:**
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `user_id` | integer | foreign key | Customer who left the review |
+| `pedido_id` | integer | foreign key | Order the product was purchased in |
+| `producto_id` | integer | foreign key | Product being reviewed |
+| `estrellas` | integer | min:1, max:5 | Star rating (1-5) |
+| `comentario` | text | max:255, nullable | Optional review text |
+
+## Review Submission
+
+### Submit Product Review
+
+**Endpoint:** `POST /api/calificaciones`
+
+**Authentication:** Required (cliente role)
+
+**Request Body:**
+
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `pedido_id` | integer | required, exists:pedidos,id | Order ID |
+| `producto_id` | integer | required, exists:productos,id | Product ID |
+| `estrellas` | integer | required, min:1, max:5 | Star rating |
+| `comentario` | string | nullable, max:255 | Review comment |
+
+**Example Request:**
+
+```javascript
+const response = await fetch('/api/calificaciones', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    pedido_id: 42,
+    producto_id: 12,
+    estrellas: 5,
+    comentario: '¡Excelente café! Muy buen sabor y presentación.'
+  })
+});
+```
+
+**Success Response:**
+
+```json
+{
+  "message": "¡Gracias por tu calificación! ⭐",
+  "calificacion": {
+    "id": 15,
+    "user_id": 25,
+    "pedido_id": 42,
+    "producto_id": 12,
+    "estrellas": 5,
+    "comentario": "¡Excelente café! Muy buen sabor y presentación.",
+    "created_at": "2026-03-05T15:30:00.000000Z",
+    "updated_at": "2026-03-05T15:30:00.000000Z"
+  }
+}
+```
+
+**Error Responses:**
+
+```json
+// Order not found or doesn't belong to user
+{
+  "message": "Pedido no encontrado."
+}
+
+// Order not delivered yet
+{
+  "message": "Solo puedes calificar productos de pedidos entregados."
+}
+
+// Already reviewed this product in this order
+{
+  "message": "Ya has calificado este producto."
+}
+```
+
+## Validation Rules
+
+BeanQuick implements strict business rules to ensure review authenticity:
+
+### Rule 1: Order Ownership Verification
+
+**Purpose:** Ensures the reviewer actually placed the order
+
+```php
+$pedido = Pedido::where('id', $request->pedido_id)
+                ->where('user_id', Auth::id())
+                ->first();
+
+if (!$pedido) {
+    return response()->json(['message' => 'Pedido no encontrado.'], 404);
+}
+```
+
+### Rule 2: Delivery Confirmation
+
+**Purpose:** Only delivered orders can be reviewed (prevents premature reviews)
+
+```php
+if (strtolower($pedido->estado) !== 'entregado') {
+    return response()->json([
+        'message' => 'Solo puedes calificar productos de pedidos entregados.'
+    ], 403);
+}
+```
+
+<Info>
+**Case Insensitive:** The validation uses `strtolower()` to handle potential case variations in the `estado` field.
+</Info>
+
+### Rule 3: Duplicate Prevention
+
+**Purpose:** One review per product per order (prevents spam)
+
+```php
+$existe = Calificacion::where('pedido_id', $request->pedido_id)
+                      ->where('producto_id', $request->producto_id)
+                      ->exists();
+
+if ($existe) {
+    return response()->json(['message' => 'Ya has calificado este producto.'], 400);
+}
+```
+
+<Warning>
+**Important:** A customer can review the same product multiple times if they order it in different orders. The uniqueness constraint is per order, not per product.
+</Warning>
+
+## Controller Implementation
+
+**Complete Store Method:**
+
+```php
+public function store(Request $request): JsonResponse
+{
+    // Validate input
+    $request->validate([
+        'pedido_id'   => 'required|exists:pedidos,id',
+        'producto_id' => 'required|exists:productos,id',
+        'estrellas'   => 'required|integer|min:1|max:5',
+        'comentario'  => 'nullable|string|max:255',
+    ]);
+
+    try {
+        // 1. Verify order ownership
+        $pedido = Pedido::where('id', $request->pedido_id)
+                        ->where('user_id', Auth::id())
+                        ->first();
+
+        if (!$pedido) {
+            return response()->json(['message' => 'Pedido no encontrado.'], 404);
+        }
+
+        // 2. Ensure order is delivered
+        if (strtolower($pedido->estado) !== 'entregado') {
+            return response()->json([
+                'message' => 'Solo puedes calificar productos de pedidos entregados.'
+            ], 403);
+        }
+
+        // 3. Check for duplicates
+        $existe = Calificacion::where('pedido_id', $request->pedido_id)
+                              ->where('producto_id', $request->producto_id)
+                              ->exists();
+
+        if ($existe) {
+            return response()->json(['message' => 'Ya has calificado este producto.'], 400);
+        }
+
+        // 4. Create rating
+        $calificacion = Calificacion::create([
+            'user_id'     => Auth::id(),
+            'pedido_id'   => $request->pedido_id,
+            'producto_id' => $request->producto_id,
+            'estrellas'   => $request->estrellas,
+            'comentario'  => $request->comentario,
+        ]);
+
+        return response()->json([
+            'message' => '¡Gracias por tu calificación! ⭐',
+            'calificacion' => $calificacion
+        ], 201);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error al guardar la calificación',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+```
+
+## View Product Reviews
+
+### Get Reviews for a Product
+
+**Endpoint:** `GET /api/productos/{producto_id}/calificaciones`
+
+**Authentication:** Not required (public endpoint)
+
+**Response:**
+
+```json
+[
+  {
+    "id": 15,
+    "user_id": 25,
+    "pedido_id": 42,
+    "producto_id": 12,
+    "estrellas": 5,
+    "comentario": "¡Excelente café! Muy buen sabor y presentación.",
+    "created_at": "2026-03-05T15:30:00.000000Z",
+    "updated_at": "2026-03-05T15:30:00.000000Z",
+    "usuario": {
+      "id": 25,
+      "name": "Juan Pérez"
+    }
+  },
+  {
+    "id": 14,
+    "user_id": 18,
+    "pedido_id": 38,
+    "producto_id": 12,
+    "estrellas": 4,
+    "comentario": "Muy bueno, pero podría estar más caliente.",
+    "created_at": "2026-03-04T12:15:00.000000Z",
+    "updated_at": "2026-03-04T12:15:00.000000Z",
+    "usuario": {
+      "id": 18,
+      "name": "María López"
+    }
+  }
+]
+```
+
+**Controller Logic:**
+
+```php
+public function porProducto($productoId): JsonResponse
+{
+    $calificaciones = Calificacion::where('producto_id', $productoId)
+        // Eager load user, only expose id and name
+        ->with('usuario:id,name') 
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return response()->json($calificaciones);
+}
+```
+
+<Info>
+**Privacy Protection:** Only the user's ID and name are exposed in reviews. Email and other sensitive data remain hidden.
+</Info>
+
+## Featured Products Integration
+
+Ratings directly influence which products appear on the homepage.
+
+### Average Rating Calculation
+
+The featured products endpoint calculates average ratings dynamically:
+
+```php
+public function destacados(): JsonResponse
+{
+    $productos = Producto::select('id', 'nombre', 'precio', 'imagen', 'empresa_id')
+        ->with(['empresa:id,nombre,logo', 'calificaciones:id,producto_id,estrellas'])
+        ->get();
+
+    $destacados = $productos->map(function ($producto) {
+        // Calculate average rating
+        $promedio = $producto->calificaciones->avg('estrellas');
+        $producto->calificaciones_avg_estrellas = $promedio ? round($promedio, 1) : 0;
+        
+        // Clean up
+        unset($producto->calificaciones);
+        
+        return $producto;
+    })
+    // Only products with ratings
+    ->filter(fn($p) => $p->calificaciones_avg_estrellas > 0)
+    // Sort by rating
+    ->sortByDesc('calificaciones_avg_estrellas')
+    // Take top 4
+    ->take(4)
+    ->values();
+
+    return response()->json($destacados);
+}
+```
+
+**Example Response:**
+
+```json
+[
+  {
+    "id": 12,
+    "nombre": "Café Latte",
+    "precio": 7500.0,
+    "imagen_url": "...",
+    "calificaciones_avg_estrellas": 4.8
+  },
+  {
+    "id": 8,
+    "nombre": "Cappuccino",
+    "precio": 8000.0,
+    "imagen_url": "...",
+    "calificaciones_avg_estrellas": 4.7
+  }
+  // ... 2 more products
+]
+```
+
+## User Experience Flow
+
+### Customer Journey for Leaving a Review
+
+<Steps>
+  <Step title="Order Delivered">
+    Customer receives their order. Business marks order as `'Entregado'`.
+  </Step>
+  
+  <Step title="Navigate to Order History">
+    Customer views their completed orders at `/mis-pedidos`.
+  </Step>
+  
+  <Step title="Select Product to Review">
+    Customer clicks "Calificar" button on a delivered order.
+  </Step>
+  
+  <Step title="Submit Review">
+    Customer:
+    - Selects star rating (1-5)
+    - Optionally writes a comment
+    - Submits the review
+  </Step>
+  
+  <Step title="Review Published">
+    Review appears on the product detail page for all users to see.
+  </Step>
+</Steps>
+
+## Implementation Examples
+
+### React Rating Component
+
+```jsx
+import { useState } from 'react';
+
+function RatingForm({ pedidoId, productoId, onSuccess }) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (rating === 0) {
+      alert('Por favor selecciona una calificación');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/calificaciones', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          pedido_id: pedidoId,
+          producto_id: productoId,
+          estrellas: rating,
+          comentario: comment
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(result.message);
+        if (onSuccess) onSuccess();
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+      alert('Error al enviar calificación');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="rating-form">
+      <h3>Califica este producto</h3>
+      
+      <div className="stars">
+        {[1, 2, 3, 4, 5].map(star => (
+          <button
+            key={star}
+            type="button"
+            className={`star ${
+              star <= (hoveredRating || rating) ? 'filled' : ''
+            }`}
+            onClick={() => setRating(star)}
+            onMouseEnter={() => setHoveredRating(star)}
+            onMouseLeave={() => setHoveredRating(0)}
+          >
+            ⭐
+          </button>
+        ))}
+      </div>
+      
+      <textarea
+        placeholder="Escribe tu opinión (opcional)"
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        maxLength={255}
+        rows={4}
+      />
+      
+      <button type="submit" disabled={loading || rating === 0}>
+        {loading ? 'Enviando...' : 'Enviar Calificación'}
+      </button>
+    </form>
+  );
+}
+
+export default RatingForm;
+```
+
+### React Reviews Display Component
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function ProductReviews({ productoId }) {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [averageRating, setAverageRating] = useState(0);
+
+  useEffect(() => {
+    loadReviews();
+  }, [productoId]);
+
+  const loadReviews = async () => {
+    try {
+      const response = await fetch(`/api/productos/${productoId}/calificaciones`);
+      const data = await response.json();
+      setReviews(data);
+      
+      // Calculate average
+      if (data.length > 0) {
+        const avg = data.reduce((sum, r) => sum + r.estrellas, 0) / data.length;
+        setAverageRating(avg.toFixed(1));
+      }
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderStars = (rating) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <span key={i} className={i < rating ? 'star-filled' : 'star-empty'}>
+        ⭐
+      </span>
+    ));
+  };
+
+  if (loading) return <div>Cargando reseñas...</div>;
+
+  return (
+    <div className="product-reviews">
+      <h3>Reseñas de Clientes</h3>
+      
+      {reviews.length > 0 ? (
+        <>
+          <div className="rating-summary">
+            <div className="average-rating">{averageRating}</div>
+            <div className="stars">{renderStars(Math.round(averageRating))}</div>
+            <div className="review-count">({reviews.length} reseñas)</div>
+          </div>
+          
+          <div className="reviews-list">
+            {reviews.map(review => (
+              <div key={review.id} className="review-card">
+                <div className="review-header">
+                  <span className="reviewer-name">{review.usuario.name}</span>
+                  <span className="review-date">
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="review-stars">
+                  {renderStars(review.estrellas)}
+                </div>
+                {review.comentario && (
+                  <p className="review-comment">{review.comentario}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p>Este producto aún no tiene reseñas.</p>
+      )}
+    </div>
+  );
+}
+
+export default ProductReviews;
+```
+
+### CSS for Star Rating
+
+```css
+.stars {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.star {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  filter: grayscale(100%);
+  opacity: 0.3;
+}
+
+.star.filled {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+.star:hover {
+  transform: scale(1.2);
+}
+
+.star-filled {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+.star-empty {
+  filter: grayscale(100%);
+  opacity: 0.3;
+}
+```
+
+## Database Schema
+
+### Migration Example
+
+```php
+Schema::create('calificaciones', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+    $table->foreignId('pedido_id')->constrained('pedidos')->onDelete('cascade');
+    $table->foreignId('producto_id')->constrained('productos')->onDelete('cascade');
+    $table->integer('estrellas'); // 1-5
+    $table->text('comentario')->nullable();
+    $table->timestamps();
+    
+    // Prevent duplicate reviews for same product in same order
+    $table->unique(['pedido_id', 'producto_id']);
+});
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Verified Purchases Only" icon="shield-check">
+    Only allow reviews from delivered orders to ensure authenticity and prevent fake reviews.
+  </Card>
+  
+  <Card title="Moderate Reviews" icon="flag">
+    Consider implementing a moderation system to flag inappropriate content before it goes live.
+  </Card>
+  
+  <Card title="Respond to Reviews" icon="reply">
+    Allow businesses to respond to customer reviews to show engagement and resolve issues.
+  </Card>
+  
+  <Card title="Helpful Votes" icon="thumbs-up">
+    Implement "helpful" voting to surface the most useful reviews to the top.
+  </Card>
+</CardGroup>
+
+## Future Enhancements
+
+<AccordionGroup>
+  <Accordion title="Photo Reviews">
+    Allow customers to upload photos with their reviews:
+    - Validate image type and size
+    - Store in `storage/app/public/reviews/`
+    - Display in review cards
+  </Accordion>
+
+  <Accordion title="Business Responses">
+    Enable businesses to respond to reviews:
+    - Add `respuesta` field to `calificaciones` table
+    - Create endpoint for business to submit response
+    - Display below customer review
+  </Accordion>
+
+  <Accordion title="Review Filtering">
+    Add filtering options:
+    - By star rating (show only 5-star, 4-star, etc.)
+    - By date (most recent first)
+    - By verified purchase
+  </Accordion>
+
+  <Accordion title="Incentivize Reviews">
+    Encourage more reviews:
+    - Send email reminder after delivery
+    - Offer discount on next order for leaving review
+    - Display review count milestone badges
+  </Accordion>
+</AccordionGroup>
+
+## Analytics Insights
+
+### Track Review Metrics
+
+```php
+// Average rating per business
+$avgRating = DB::table('calificaciones')
+    ->join('productos', 'calificaciones.producto_id', '=', 'productos.id')
+    ->where('productos.empresa_id', $empresaId)
+    ->avg('calificaciones.estrellas');
+
+// Review count per product
+$reviewCounts = DB::table('calificaciones')
+    ->select('producto_id', DB::raw('count(*) as total'))
+    ->groupBy('producto_id')
+    ->get();
+
+// Rating distribution
+$distribution = DB::table('calificaciones')
+    ->select('estrellas', DB::raw('count(*) as count'))
+    ->groupBy('estrellas')
+    ->orderBy('estrellas', 'desc')
+    ->get();
+```
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Order Management" icon="receipt" href="/features/order-management">
+    Learn about order status and delivery confirmation
+  </Card>
+  
+  <Card title="Product Management" icon="box" href="/features/product-management">
+    Understand how ratings affect featured products
+  </Card>
+</CardGroup>

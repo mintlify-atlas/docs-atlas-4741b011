@@ -1,0 +1,589 @@
+---
+title: 'Registration'
+description: 'User registration, business registration request, and account activation'
+---
+
+## User Registration
+
+Create a new user account. Automatically logs in the user and returns an API token.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.beanquick.com/api/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Juan Pérez",
+    "email": "juan@example.com",
+    "password": "SecurePass123",
+    "password_confirmation": "SecurePass123",
+    "rol": "cliente"
+  }'
+```
+</CodeGroup>
+
+### Request Body
+
+<ParamField body="name" type="string" required>
+  User's full name. Maximum 255 characters. Cannot contain HTML/script tags (`<`, `>`, `{`, `}`, `/`).
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  User's email address. Must be unique in the system.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  User's password. Must meet security requirements:
+  - Minimum 8 characters
+  - At least one uppercase letter
+  - At least one lowercase letter
+  - At least one number
+</ParamField>
+
+<ParamField body="password_confirmation" type="string" required>
+  Password confirmation. Must match the `password` field.
+</ParamField>
+
+<ParamField body="rol" type="string" required>
+  User's role. Allowed values:
+  - `cliente` - Regular customer
+  - `empresa` - Business owner
+  - `admin` - Administrator
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  Response status. Returns `success` on successful registration.
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  Newly created user information.
+  
+  <Expandable title="user properties">
+    <ResponseField name="id" type="integer">
+      User's unique identifier.
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      User's full name.
+    </ResponseField>
+    
+    <ResponseField name="email" type="string">
+      User's email address.
+    </ResponseField>
+    
+    <ResponseField name="rol" type="string">
+      User's role.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="token" type="string">
+  Laravel Sanctum API token for immediate authentication.
+</ResponseField>
+
+<ResponseField name="redirectTo" type="string">
+  Suggested redirect URL based on user role:
+  - `cliente`: `/` (main store)
+  - `empresa`: `/empresa/panel` (business dashboard)
+  - `admin`: `/admin/dashboard` (admin panel)
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message.
+</ResponseField>
+
+<ResponseExample>
+```json Success Response
+{
+  "status": "success",
+  "user": {
+    "id": 43,
+    "name": "Juan Pérez",
+    "email": "juan@example.com",
+    "rol": "cliente"
+  },
+  "token": "2|xyz789abc456def123ghi890jkl567mno234pqr901stu678vwx345",
+  "redirectTo": "/",
+  "message": "Cuenta creada y protegida correctamente"
+}
+```
+
+```json Validation Error - Password Weak
+{
+  "message": "The password must contain at least one uppercase and one lowercase letter.",
+  "errors": {
+    "password": [
+      "The password must be at least 8 characters.",
+      "The password must contain at least one uppercase and one lowercase letter.",
+      "The password must contain at least one number."
+    ]
+  }
+}
+```
+
+```json Validation Error - Email Taken
+{
+  "message": "The email has already been taken.",
+  "errors": {
+    "email": [
+      "The email has already been taken."
+    ]
+  }
+}
+```
+
+```json Validation Error - Invalid Name
+{
+  "message": "The name format is invalid.",
+  "errors": {
+    "name": [
+      "The name format is invalid."
+    ]
+  }
+}
+```
+</ResponseExample>
+
+<Note>
+  Upon successful registration, a welcome email is automatically sent to the user's email address.
+</Note>
+
+---
+
+## Business Registration Request
+
+Submit a business registration request. This is the first step for businesses to join BeanQuick. Admin approval is required before the business can be activated.
+
+<Warning>
+  This endpoint accepts `multipart/form-data` for file uploads. Set the appropriate `Content-Type` header or let your HTTP client handle it automatically.
+</Warning>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.beanquick.com/api/solicitud-empresa \
+  -F "nombre=Café del Sol" \
+  -F "correo=info@cafedelsol.com" \
+  -F "nit=900123456-7" \
+  -F "telefono=+57 310 1234567" \
+  -F "direccion=Calle 123 #45-67, Bogotá" \
+  -F "descripcion=Café de especialidad con granos de origen colombiano" \
+  -F "logo=@/path/to/logo.jpg" \
+  -F "foto_local=@/path/to/store-photo.jpg"
+```
+</CodeGroup>
+
+### Request Body (multipart/form-data)
+
+<ParamField body="nombre" type="string" required>
+  Business name. Maximum 255 characters.
+</ParamField>
+
+<ParamField body="correo" type="string" required>
+  Business contact email. Must be unique (not already submitted).
+</ParamField>
+
+<ParamField body="nit" type="string">
+  Tax identification number (NIT). Maximum 50 characters. Optional.
+</ParamField>
+
+<ParamField body="telefono" type="string">
+  Business phone number. Maximum 50 characters. Optional.
+</ParamField>
+
+<ParamField body="direccion" type="string">
+  Business physical address. Maximum 255 characters. Optional.
+</ParamField>
+
+<ParamField body="descripcion" type="string">
+  Business description. Optional.
+</ParamField>
+
+<ParamField body="logo" type="file">
+  Business logo image. Allowed formats: `jpeg`, `png`, `jpg`, `webp`. Maximum size: 2MB. Optional but recommended.
+</ParamField>
+
+<ParamField body="foto_local" type="file">
+  Store/location photo. Allowed formats: `jpeg`, `png`, `jpg`, `webp`. Maximum size: 4MB. Optional.
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  Response status. Returns `success` when request is submitted successfully.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message.
+</ResponseField>
+
+<ResponseField name="solicitud_id" type="integer">
+  Unique identifier for the submitted request.
+</ResponseField>
+
+<ResponseExample>
+```json Success Response
+{
+  "status": "success",
+  "message": "Tu solicitud fue enviada correctamente. Nuestro equipo la revisará pronto.",
+  "solicitud_id": 12
+}
+```
+
+```json Validation Error - Email Already Submitted
+{
+  "message": "The correo has already been taken.",
+  "errors": {
+    "correo": [
+      "The correo has already been taken."
+    ]
+  }
+}
+```
+
+```json Validation Error - Invalid File
+{
+  "message": "The logo must be a file of type: jpeg, png, jpg, webp.",
+  "errors": {
+    "logo": [
+      "The logo must be a file of type: jpeg, png, jpg, webp.",
+      "The logo must not be greater than 2048 kilobytes."
+    ]
+  }
+}
+```
+
+```json Error - Logo Not Detected
+{
+  "error": "Laravel no detecta el archivo logo. Revisa el Body en Thunder."
+}
+```
+</ResponseExample>
+
+<Note>
+  The request is created with status `pendiente` (pending) and awaits admin approval. Once approved by an admin, an activation email with a unique token will be sent to the business email.
+</Note>
+
+---
+
+## Validate Activation Token
+
+Validate a business activation token and retrieve the associated request details. This endpoint is used before displaying the activation form.
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://api.beanquick.com/api/empresa/validar-token/abc123xyz789token456 \
+  -H "Content-Type: application/json"
+```
+</CodeGroup>
+
+### Path Parameters
+
+<ParamField path="token" type="string" required>
+  Activation token sent to the business email after admin approval.
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  Response status. Returns `success` if token is valid.
+</ResponseField>
+
+<ResponseField name="solicitud" type="object">
+  Business request details.
+  
+  <Expandable title="solicitud properties">
+    <ResponseField name="id" type="integer">
+      Request unique identifier.
+    </ResponseField>
+    
+    <ResponseField name="nombre" type="string">
+      Business name.
+    </ResponseField>
+    
+    <ResponseField name="correo" type="string">
+      Business email.
+    </ResponseField>
+    
+    <ResponseField name="nit" type="string" nullable>
+      Tax identification number.
+    </ResponseField>
+    
+    <ResponseField name="telefono" type="string" nullable>
+      Phone number.
+    </ResponseField>
+    
+    <ResponseField name="direccion" type="string" nullable>
+      Business address.
+    </ResponseField>
+    
+    <ResponseField name="descripcion" type="string" nullable>
+      Business description.
+    </ResponseField>
+    
+    <ResponseField name="logo" type="string" nullable>
+      Logo file path.
+    </ResponseField>
+    
+    <ResponseField name="foto_local" type="string" nullable>
+      Store photo file path.
+    </ResponseField>
+    
+    <ResponseField name="logo_url" type="string" nullable>
+      Full URL to logo image.
+    </ResponseField>
+    
+    <ResponseField name="foto_local_url" type="string" nullable>
+      Full URL to store photo.
+    </ResponseField>
+    
+    <ResponseField name="estado" type="string">
+      Request status. Should be `aprobado` (approved) for valid tokens.
+    </ResponseField>
+    
+    <ResponseField name="token" type="string">
+      Activation token.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+```json Success Response
+{
+  "status": "success",
+  "solicitud": {
+    "id": 12,
+    "nombre": "Café del Sol",
+    "correo": "info@cafedelsol.com",
+    "nit": "900123456-7",
+    "telefono": "+57 310 1234567",
+    "direccion": "Calle 123 #45-67, Bogotá",
+    "descripcion": "Café de especialidad con granos de origen colombiano",
+    "logo": "solicitudes/logos/cafe-del-sol-logo.jpg",
+    "foto_local": "solicitudes/locales/cafe-del-sol-store.jpg",
+    "logo_url": "https://api.beanquick.com/storage/solicitudes/logos/cafe-del-sol-logo.jpg",
+    "foto_local_url": "https://api.beanquick.com/storage/solicitudes/locales/cafe-del-sol-store.jpg",
+    "estado": "aprobado",
+    "token": "abc123xyz789token456"
+  }
+}
+```
+
+```json Error Response - Invalid Token
+{
+  "message": "El enlace de activación no es válido o ya fue usado."
+}
+```
+</ResponseExample>
+
+---
+
+## Activate Business Account
+
+Complete the business activation by creating a user account and business profile. This endpoint processes the final step after admin approval.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.beanquick.com/api/empresa/activar/abc123xyz789token456 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "password": "SecurePass123",
+    "password_confirmation": "SecurePass123"
+  }'
+```
+</CodeGroup>
+
+### Path Parameters
+
+<ParamField path="token" type="string" required>
+  Activation token received via email after admin approval.
+</ParamField>
+
+### Request Body
+
+<ParamField body="password" type="string" required>
+  Account password. Must be at least 8 characters.
+</ParamField>
+
+<ParamField body="password_confirmation" type="string" required>
+  Password confirmation. Must match the `password` field.
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  Response status. Returns `success` on successful activation.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message.
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  Created user account information.
+  
+  <Expandable title="user properties">
+    <ResponseField name="id" type="integer">
+      User unique identifier.
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      User name (same as business name).
+    </ResponseField>
+    
+    <ResponseField name="email" type="string">
+      User email.
+    </ResponseField>
+    
+    <ResponseField name="rol" type="string">
+      User role. Will be `empresa`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+```json Success Response
+{
+  "status": "success",
+  "message": "Cuenta creada exitosamente. Ya puedes iniciar sesión.",
+  "user": {
+    "id": 25,
+    "name": "Café del Sol",
+    "email": "info@cafedelsol.com",
+    "rol": "empresa"
+  }
+}
+```
+
+```json Error - Invalid Token
+{
+  "message": "Enlace no válido."
+}
+```
+
+```json Error - Email Already Exists
+{
+  "message": "Ya existe una cuenta con este correo."
+}
+```
+
+```json Validation Error - Password Mismatch
+{
+  "message": "The password confirmation does not match.",
+  "errors": {
+    "password": [
+      "The password confirmation does not match."
+    ]
+  }
+}
+```
+
+```json Error - Server Error
+{
+  "error_real": "Database connection failed",
+  "linea": 78
+}
+```
+</ResponseExample>
+
+<Note>
+  This endpoint performs multiple operations in a database transaction:
+  1. Creates a user account with role `empresa`
+  2. Creates a business profile (`Empresa`) linked to the user
+  3. Moves uploaded files from temporary to permanent storage
+  4. Updates the request status to `completada`
+  5. Invalidates the activation token
+  
+  If any step fails, all changes are rolled back.
+</Note>
+
+---
+
+## Business Registration Flow
+
+The complete business registration process follows these steps:
+
+<Steps>
+  <Step title="Submit Registration Request">
+    Business submits initial request via `POST /api/solicitud-empresa` with business details and images. Request status is set to `pendiente`.
+  </Step>
+  
+  <Step title="Admin Review">
+    Admin reviews the request in the admin dashboard (`/admin/solicitudes`) and either approves or rejects it.
+  </Step>
+  
+  <Step title="Approval Notification">
+    If approved, admin triggers `POST /admin/aprobar/{id}` which:
+    - Updates request status to `aprobado`
+    - Generates a unique activation token
+    - Sends activation email to the business with a link containing the token
+  </Step>
+  
+  <Step title="Token Validation">
+    Business clicks the link and frontend calls `GET /api/empresa/validar-token/{token}` to verify the token and display request details.
+  </Step>
+  
+  <Step title="Account Activation">
+    Business sets their password and submits `POST /api/empresa/activar/{token}` to create their account and business profile.
+  </Step>
+  
+  <Step title="Login">
+    Business can now login via `POST /api/login` using their email and password.
+  </Step>
+</Steps>
+
+---
+
+## Error Responses
+
+### 400 Bad Request
+
+Returned when required file uploads are missing or invalid.
+
+```json
+{
+  "error": "Laravel no detecta el archivo logo. Revisa el Body en Thunder."
+}
+```
+
+### 404 Not Found
+
+Returned when activation token is invalid or already used.
+
+```json
+{
+  "message": "El enlace de activación no es válido o ya fue usado."
+}
+```
+
+### 422 Unprocessable Entity
+
+Returned when validation fails or business logic prevents the operation.
+
+```json
+{
+  "message": "Ya existe una cuenta con este correo."
+}
+```
+
+```json
+{
+  "message": "The email has already been taken.",
+  "errors": {
+    "email": [
+      "The email has already been taken."
+    ]
+  }
+}
+```
+
+### 500 Internal Server Error
+
+Returned when an unexpected error occurs during activation.
+
+```json
+{
+  "error_real": "Detailed error message",
+  "linea": 78
+}
+```

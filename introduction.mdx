@@ -1,0 +1,215 @@
+---
+title: Introduction
+description: Welcome to BeanQuick - Your local coffee marketplace platform
+---
+
+## What is BeanQuick?
+
+BeanQuick is a comprehensive marketplace platform that connects coffee lovers with local coffee shops and businesses. Built with Laravel and React, BeanQuick enables customers to discover, order, and enjoy their favorite coffee products while empowering local businesses to manage their digital storefronts efficiently.
+
+<img
+  className="block"
+  src="/images/hero-light.svg"
+  alt="BeanQuick Platform Overview"
+/>
+
+## Key Features
+
+BeanQuick offers a complete ecosystem for coffee commerce with three distinct user roles:
+
+### For Customers
+
+<CardGroup cols={2}>
+  <Card title="Browse Coffee Shops" icon="store" iconType="solid" color="#8B4513">
+    Discover local coffee businesses with detailed profiles, photos, and product catalogs
+  </Card>
+  <Card title="Smart Shopping Cart" icon="shopping-cart" iconType="solid" color="#D2691E">
+    Add products from multiple shops with real-time cart management
+  </Card>
+  <Card title="Order Management" icon="clipboard-list" iconType="solid" color="#8B4513">
+    Track orders, schedule pickup times, and view order history
+  </Card>
+  <Card title="Reviews & Ratings" icon="star" iconType="solid" color="#D2691E">
+    Rate products and share feedback to help other coffee enthusiasts
+  </Card>
+</CardGroup>
+
+### For Coffee Businesses
+
+<CardGroup cols={2}>
+  <Card title="Product Catalog" icon="coffee" iconType="solid" color="#5C3317">
+    Manage your menu with images, descriptions, prices, and categories
+  </Card>
+  <Card title="Order Processing" icon="tasks" iconType="solid" color="#8B4513">
+    Receive and manage customer orders with status tracking
+  </Card>
+  <Card title="Business Dashboard" icon="chart-line" iconType="solid" color="#D2691E">
+    Monitor sales, view analytics, and generate PDF reports
+  </Card>
+  <Card title="Store Control" icon="toggle-on" iconType="solid" color="#5C3317">
+    Open/close your digital storefront with a single click
+  </Card>
+</CardGroup>
+
+### For Administrators
+
+<CardGroup cols={2}>
+  <Card title="Business Approval" icon="check-circle" iconType="solid" color="#8B4513">
+    Review and approve new business registration requests
+  </Card>
+  <Card title="User Management" icon="users" iconType="solid" color="#D2691E">
+    Manage users, roles, and permissions across the platform
+  </Card>
+  <Card title="Category Management" icon="tags" iconType="solid" color="#5C3317">
+    Create and organize product categories
+  </Card>
+  <Card title="Platform Oversight" icon="shield" iconType="solid" color="#8B4513">
+    Monitor businesses and ensure platform quality standards
+  </Card>
+</CardGroup>
+
+## Technology Stack
+
+BeanQuick is built with modern, robust technologies:
+
+<CodeGroup>
+```json Backend - Laravel 12
+{
+  "framework": "Laravel 12.0",
+  "php": "^8.2",
+  "authentication": "Laravel Sanctum",
+  "pdf_generation": "DomPDF",
+  "payment_gateway": "Mercado Pago"
+}
+```
+
+```json Frontend - React + Vite
+{
+  "library": "React 19.2",
+  "bundler": "Vite 7.2",
+  "router": "React Router DOM 7.9",
+  "http_client": "Axios",
+  "animations": "Motion",
+  "charts": "Recharts"
+}
+```
+</CodeGroup>
+
+## Who is BeanQuick For?
+
+<AccordionGroup>
+  <Accordion title="Coffee Shop Owners" icon="store" iconType="solid">
+    Perfect for cafés, roasters, and coffee retailers looking to expand their digital presence. BeanQuick provides everything you need to showcase products, manage orders, and grow your business online without technical expertise.
+  </Accordion>
+  
+  <Accordion title="Coffee Enthusiasts" icon="mug-hot" iconType="solid">
+    Ideal for customers who want to discover and support local coffee businesses. Browse multiple shops, compare products, read reviews, and place orders for pickup - all in one convenient platform.
+  </Accordion>
+  
+  <Accordion title="Marketplace Operators" icon="building" iconType="solid">
+    Designed for entrepreneurs who want to create a local coffee marketplace. The admin tools make it easy to onboard businesses, manage the community, and maintain quality standards.
+  </Accordion>
+  
+  <Accordion title="Developers" icon="code" iconType="solid">
+    Great for developers looking to learn or extend a modern Laravel-React application. BeanQuick demonstrates best practices including API development, authentication, file uploads, payment integration, and more.
+  </Accordion>
+</AccordionGroup>
+
+## Core Capabilities
+
+### Multi-Role Authentication
+BeanQuick uses **Laravel Sanctum** for secure, token-based authentication supporting three user roles:
+- **Cliente** (Customer) - Browse, shop, order, and review
+- **Empresa** (Business) - Manage products, orders, and business profile  
+- **Admin** - Platform administration and business approval
+
+### Payment Processing
+Integrated with **Mercado Pago** for secure payment processing with automatic webhook handling for order status updates.
+
+### Real-Time Features
+- Live cart synchronization across devices
+- Real-time order status updates
+- Dynamic store open/closed status
+- Instant product availability updates
+
+### Business Registration Flow
+<Steps>
+  <Step title="Submit Application">
+    Businesses submit registration requests with their details and documentation
+  </Step>
+  <Step title="Admin Review">
+    Platform administrators review and approve/reject applications
+  </Step>
+  <Step title="Email Activation">
+    Approved businesses receive an activation email with a secure token
+  </Step>
+  <Step title="Account Setup">
+    Complete profile setup and start adding products immediately
+  </Step>
+</Steps>
+
+## Platform Architecture
+
+BeanQuick follows a **monorepo structure** with separate backend and frontend:
+
+```plaintext
+BeanQuick/
+├── back-end/          # Laravel 12 API
+│   ├── app/
+│   │   ├── Http/Controllers/
+│   │   ├── Models/
+│   │   └── ...
+│   ├── database/
+│   ├── routes/
+│   └── composer.json
+│
+└── front-end/         # React + Vite SPA
+    ├── src/
+    │   ├── pages/
+    │   ├── components/
+    │   └── App.jsx
+    └── package.json
+```
+
+## Next Steps
+
+Ready to get started? Follow our comprehensive guides:
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart" color="#8B4513">
+    Get BeanQuick running locally in under 10 minutes
+  </Card>
+  <Card title="Installation" icon="download" href="/installation" color="#D2691E">
+    Detailed installation instructions for production deployment
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/authentication" color="#5C3317">
+    Explore all available API endpoints and authentication
+  </Card>
+  <Card title="Configuration" icon="gear" href="/installation" color="#8B4513">
+    Configure database, payments, and environment settings
+  </Card>
+</CardGroup>
+
+<Note>
+  **Local Development**: BeanQuick runs entirely on localhost by default. The backend serves on `http://127.0.0.1:8000` and the frontend on `http://localhost:5173`.
+</Note>
+
+## Support & Community
+
+<CardGroup cols={3}>
+  <Card title="Documentation" icon="book" iconType="solid">
+    Comprehensive guides and API references
+  </Card>
+  <Card title="GitHub Repository" icon="github" iconType="duotone">
+    Access source code and report issues
+  </Card>
+  <Card title="Contributing" icon="code-pull-request" iconType="solid">
+    Help improve BeanQuick for everyone
+  </Card>
+</CardGroup>
+
+---
+
+<Tip>
+  BeanQuick is built with scalability in mind. Whether you're starting with a single coffee shop or building a city-wide marketplace, the platform grows with your needs.
+</Tip>

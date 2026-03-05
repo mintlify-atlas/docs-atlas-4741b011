@@ -1,0 +1,351 @@
+---
+title: 'Authentication'
+description: 'Login, logout, and token management with Laravel Sanctum'
+---
+
+## Login
+
+Authenticate a user and receive a Sanctum API token for subsequent requests.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.beanquick.com/api/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "SecurePass123"
+  }'
+```
+</CodeGroup>
+
+### Request Body
+
+<ParamField body="email" type="string" required>
+  User's email address. Must be a valid email format.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  User's password.
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  Response status. Returns `success` on successful authentication.
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  Authenticated user information.
+  
+  <Expandable title="user properties">
+    <ResponseField name="id" type="integer">
+      User's unique identifier.
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      User's full name.
+    </ResponseField>
+    
+    <ResponseField name="email" type="string">
+      User's email address.
+    </ResponseField>
+    
+    <ResponseField name="rol" type="string">
+      User's role. Possible values: `cliente`, `empresa`, `admin`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="token" type="string">
+  Laravel Sanctum API token. Include this in the `Authorization: Bearer {token}` header for authenticated requests.
+</ResponseField>
+
+<ResponseField name="redirectTo" type="string">
+  Suggested redirect URL based on user role:
+  - `cliente`: `/` (main store)
+  - `empresa`: `/empresa/panel` (business dashboard) or `/empresa/create` (if business profile not created)
+  - `admin`: `/admin/dashboard` (admin panel)
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message.
+</ResponseField>
+
+<ResponseExample>
+```json Success Response
+{
+  "status": "success",
+  "user": {
+    "id": 42,
+    "name": "Juan Pérez",
+    "email": "juan@example.com",
+    "rol": "cliente"
+  },
+  "token": "1|abc123def456ghi789jkl012mno345pqr678stu901vwx234yz",
+  "redirectTo": "/",
+  "message": "Login exitoso"
+}
+```
+
+```json Error Response
+{
+  "status": "error",
+  "message": "Las credenciales no coinciden con nuestros registros."
+}
+```
+
+```json Validation Error
+{
+  "message": "The email field must be a valid email address.",
+  "errors": {
+    "email": [
+      "The email field must be a valid email address."
+    ]
+  }
+}
+```
+</ResponseExample>
+
+---
+
+## Logout
+
+Revoke the current user's access token and end their session.
+
+<Note>
+  This endpoint requires authentication. Include the `Authorization: Bearer {token}` header.
+</Note>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.beanquick.com/api/logout \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json"
+```
+</CodeGroup>
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token obtained from login. Format: `Bearer {token}`
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="string">
+  Response status. Returns `success` when token is successfully revoked.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message.
+</ResponseField>
+
+<ResponseExample>
+```json Success Response
+{
+  "status": "success",
+  "message": "Sesión cerrada correctamente"
+}
+```
+</ResponseExample>
+
+---
+
+## Get Current User
+
+Retrieve the authenticated user's information, including their associated business profile if applicable.
+
+<Note>
+  This endpoint requires authentication. Include the `Authorization: Bearer {token}` header.
+</Note>
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://api.beanquick.com/api/user \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json"
+```
+</CodeGroup>
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token obtained from login. Format: `Bearer {token}`
+</ParamField>
+
+### Response
+
+<ResponseField name="id" type="integer">
+  User's unique identifier.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  User's full name.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  User's email address.
+</ResponseField>
+
+<ResponseField name="rol" type="string">
+  User's role. Possible values: `cliente`, `empresa`, `admin`.
+</ResponseField>
+
+<ResponseField name="empresa" type="object" nullable>
+  Business profile information. Only present if user role is `empresa` and profile exists.
+  
+  <Expandable title="empresa properties">
+    <ResponseField name="id" type="integer">
+      Business unique identifier.
+    </ResponseField>
+    
+    <ResponseField name="user_id" type="integer">
+      Associated user ID.
+    </ResponseField>
+    
+    <ResponseField name="nombre" type="string">
+      Business name.
+    </ResponseField>
+    
+    <ResponseField name="nit" type="string" nullable>
+      Tax identification number.
+    </ResponseField>
+    
+    <ResponseField name="direccion" type="string" nullable>
+      Business address.
+    </ResponseField>
+    
+    <ResponseField name="telefono" type="string" nullable>
+      Business phone number.
+    </ResponseField>
+    
+    <ResponseField name="descripcion" type="string" nullable>
+      Business description.
+    </ResponseField>
+    
+    <ResponseField name="logo" type="string" nullable>
+      Logo file path.
+    </ResponseField>
+    
+    <ResponseField name="foto_local" type="string" nullable>
+      Store photo file path.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+```json Cliente Response
+{
+  "id": 42,
+  "name": "Juan Pérez",
+  "email": "juan@example.com",
+  "rol": "cliente",
+  "empresa": null
+}
+```
+
+```json Empresa Response
+{
+  "id": 15,
+  "name": "María González",
+  "email": "maria@cafemaria.com",
+  "rol": "empresa",
+  "empresa": {
+    "id": 8,
+    "user_id": 15,
+    "nombre": "Café María",
+    "nit": "900123456-7",
+    "direccion": "Calle 123 #45-67, Bogotá",
+    "telefono": "+57 310 1234567",
+    "descripcion": "Café de especialidad, tostado artesanal",
+    "logo": "empresas/logos/cafe-maria-logo.jpg",
+    "foto_local": "empresas/locales/cafe-maria-store.jpg"
+  }
+}
+```
+
+```json Unauthenticated Error
+{
+  "message": "Unauthenticated."
+}
+```
+</ResponseExample>
+
+---
+
+## Token Management
+
+### Token Format
+
+BeanQuick uses Laravel Sanctum for API authentication. Tokens are issued upon login and must be included in the `Authorization` header for protected endpoints.
+
+**Header format:**
+```
+Authorization: Bearer 1|abc123def456ghi789jkl012mno345pqr678stu901vwx234yz
+```
+
+### Token Lifecycle
+
+- **Creation:** Tokens are generated during login (`POST /api/login`) and registration (`POST /api/register`)
+- **Usage:** Include in `Authorization: Bearer {token}` header for authenticated requests
+- **Revocation:** Tokens are revoked when user logs out (`POST /api/logout`)
+- **Expiration:** Tokens do not expire automatically but can be revoked at any time
+
+### Security Best Practices
+
+<Warning>
+  Never expose your API token in client-side code, public repositories, or logs. Always transmit tokens over HTTPS.
+</Warning>
+
+- Store tokens securely (e.g., httpOnly cookies, secure storage)
+- Implement token refresh mechanisms for long-lived sessions
+- Revoke tokens immediately upon logout
+- Use HTTPS for all API requests
+- Validate user permissions on the server side
+
+### Multiple Sessions
+
+Each `createToken()` call generates a new token. Users can have multiple active tokens across different devices or sessions. Calling logout revokes only the current token, not all user tokens.
+
+---
+
+## Error Responses
+
+### 401 Unauthorized
+
+Returned when credentials are invalid during login.
+
+```json
+{
+  "status": "error",
+  "message": "Las credenciales no coinciden con nuestros registros."
+}
+```
+
+### 422 Validation Error
+
+Returned when request validation fails.
+
+```json
+{
+  "message": "The email field must be a valid email address.",
+  "errors": {
+    "email": [
+      "The email field must be a valid email address."
+    ],
+    "password": [
+      "The password field is required."
+    ]
+  }
+}
+```
+
+### 419 CSRF Token Mismatch
+
+Returned when CSRF token is missing or invalid (if CSRF protection is enabled).
+
+```json
+{
+  "message": "CSRF token mismatch."
+}
+```
